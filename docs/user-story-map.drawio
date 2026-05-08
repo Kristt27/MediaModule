@@ -1,0 +1,151 @@
+<mxfile host="app.diagrams.net" modified="2026-03-25T22:05:00.000Z" agent="Codex" version="24.7.17">
+  <diagram id="common-map" name="Общая карта">
+    <mxGraphModel dx="1800" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="0" arrows="0" fold="1" page="1" pageScale="1" pageWidth="2800" pageHeight="1600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="Карта пользовательских действий информационной системы MediaModule" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111827;fontColor=#FFFFFF;strokeColor=#111827;fontStyle=1;fontSize=20;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="760" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="user-designer" value="Дизайнер" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#D9F99D;strokeColor=#A3E635;shadow=1;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="240" y="90" width="120" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="user-admin" value="Администратор" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#D9F99D;strokeColor=#A3E635;shadow=1;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="390" y="90" width="140" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="legend" value="Д: действия дизайнера&#xa;А: действия администратора" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F3F4F6;strokeColor=#D1D5DB;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="580" y="100" width="250" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="time-label" value="время" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1650" y="198" width="60" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="time-arrow" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=1;" edge="1" parent="1" source="time-start" target="time-end">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="time-start" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="240" y="220" width="10" height="10" as="geometry" />
+        </mxCell>
+        <mxCell id="time-end" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="2470" y="220" width="10" height="10" as="geometry" />
+        </mxCell>
+
+        <mxCell id="label-activities" value="АКТИВНОСТИ" style="text;html=1;strokeColor=none;fillColor=none;fontStyle=1;fontSize=22;" vertex="1" parent="1">
+          <mxGeometry x="40" y="280" width="170" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="label-backbone" value="КАРКАС" style="text;html=1;strokeColor=none;fillColor=none;fontStyle=1;fontSize=22;" vertex="1" parent="1">
+          <mxGeometry x="100" y="430" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="label-tasks" value="ЗАДАЧИ" style="text;html=1;strokeColor=none;fillColor=none;fontStyle=1;fontSize=22;" vertex="1" parent="1">
+          <mxGeometry x="90" y="590" width="120" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="act-1" value="Работа&#xa;с файлом" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#7DD3FC;strokeColor=#38BDF8;shadow=1;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="240" y="260" width="240" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="act-2" value="Проверка&#xa;и сохранение" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#7DD3FC;strokeColor=#38BDF8;shadow=1;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="530" y="260" width="240" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="act-3" value="Исправление&#xa;нарушения" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#7DD3FC;strokeColor=#38BDF8;shadow=1;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="820" y="260" width="240" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="act-4" value="Настройка&#xa;модуля" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#7DD3FC;strokeColor=#38BDF8;shadow=1;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="260" width="240" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="act-5" value="Контроль&#xa;обработки" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#7DD3FC;strokeColor=#38BDF8;shadow=1;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="260" width="240" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="act-6" value="Проверка&#xa;тегирования" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#7DD3FC;strokeColor=#38BDF8;shadow=1;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="1690" y="260" width="240" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="back-1" value="Подготовить&#xa;графический&#xa;файл" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDBA74;strokeColor=#FB923C;shadow=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="240" y="410" width="240" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="back-2" value="Сохранить файл&#xa;по правилам" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDBA74;strokeColor=#FB923C;shadow=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="530" y="410" width="240" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="back-3" value="Исправить имя&#xa;или путь" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDBA74;strokeColor=#FB923C;shadow=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="820" y="410" width="240" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="back-4" value="Изменить&#xa;параметры&#xa;модуля" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDBA74;strokeColor=#FB923C;shadow=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="410" width="240" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="back-5" value="Просмотреть&#xa;журнал и&#xa;детали записи" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDBA74;strokeColor=#FB923C;shadow=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="410" width="240" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="back-6" value="Запустить тест&#xa;тегирования" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDBA74;strokeColor=#FB923C;shadow=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="1690" y="410" width="240" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="task-1" value="Д: открыть файл в графическом редакторе" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E5E7EB;shadow=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="240" y="570" width="240" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="task-2" value="Д: проверить расширение и формат файла" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E5E7EB;shadow=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="240" y="670" width="240" height="85" as="geometry" />
+        </mxCell>
+
+        <mxCell id="task-3" value="Д: проверить имя файла по шаблону" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E5E7EB;shadow=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="530" y="570" width="240" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="task-4" value="Д: выбрать папку клиента и типа продукта" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E5E7EB;shadow=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="530" y="670" width="240" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="task-5" value="Д: сохранить файл в структуру `[Root]\\[Client]\\[ProductType]`" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E5E7EB;shadow=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="530" y="770" width="240" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="task-6" value="Д: прочитать сообщение о нарушении" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E5E7EB;shadow=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="820" y="570" width="240" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="task-7" value="Д: исправить имя файла" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E5E7EB;shadow=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="820" y="670" width="240" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="task-8" value="Д: исправить путь сохранения" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E5E7EB;shadow=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="820" y="770" width="240" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="task-9" value="Д: повторно сохранить файл" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E5E7EB;shadow=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="820" y="870" width="240" height="85" as="geometry" />
+        </mxCell>
+
+        <mxCell id="task-10" value="А: открыть вкладку настроек" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E5E7EB;shadow=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="570" width="240" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="task-11" value="А: задать `RootDirectory` и директории мониторинга" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E5E7EB;shadow=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="670" width="240" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="task-12" value="А: задать regex имени файла" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E5E7EB;shadow=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="770" width="240" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="task-13" value="А: указать `DatabasePath`, `AutoAcceptTags` и mock-заказы ELMA" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E5E7EB;shadow=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="870" width="240" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="task-14" value="А: открыть журнал обработки" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E5E7EB;shadow=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="570" width="240" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="task-15" value="А: обновить журнал и ввести фильтр" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E5E7EB;shadow=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="670" width="240" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="task-16" value="А: выбрать запись в таблице" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E5E7EB;shadow=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="770" width="240" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="task-17" value="А: просмотреть сообщение, результат, OrderId и теги" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E5E7EB;shadow=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="870" width="240" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="task-18" value="А: ввести имя файла и OrderId для теста" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E5E7EB;shadow=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1690" y="570" width="240" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="task-19" value="А: запустить генерацию mock-тегов" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E5E7EB;shadow=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1690" y="670" width="240" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="task-20" value="А: проверить набор тегов Key / Value" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E5E7EB;shadow=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1690" y="770" width="240" height="85" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

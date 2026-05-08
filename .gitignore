@@ -1,0 +1,6 @@
+﻿bin/
+obj/
+.vs/
+logs/
+data/
+.tmp_docs/

@@ -1,0 +1,128 @@
+<mxfile host="app.diagrams.net" modified="2026-03-25T22:55:00.000Z" agent="Codex" version="24.7.17">
+  <diagram id="screen-structure-simple" name="Структура экранов">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="0" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2800" pageHeight="1600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="Упрощенная структура экранов MediaModule" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111827;fontColor=#FFFFFF;strokeColor=#111827;fontStyle=1;fontSize=20;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="760" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="Только основные экраны, роли и ключевые переходы." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E5E7EB;strokeColor=#9CA3AF;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="82" width="520" height="38" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend-1" value="Зеленый: роль" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D9F99D;strokeColor=#84CC16;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="2240" y="24" width="160" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-2" value="Серый: экран" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3F4F6;strokeColor=#9CA3AF;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="2240" y="68" width="160" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-3" value="Оранжевый: состояние" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FED7AA;strokeColor=#FB923C;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="2240" y="112" width="160" height="36" as="geometry" />
+        </mxCell>
+
+        <mxCell id="designer" value="Дизайнер" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D9F99D;strokeColor=#84CC16;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="140" y="180" width="180" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="admin" value="Администратор" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D9F99D;strokeColor=#84CC16;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="1350" y="180" width="200" height="64" as="geometry" />
+        </mxCell>
+
+        <mxCell id="designer-flow-1" value="Подготовка и сохранение файла" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#60A5FA;shadow=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="70" y="320" width="320" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="worker" value="Worker обрабатывает файл&#xa;проверка имени, пути, тегов и запись в журнал" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FED7AA;strokeColor=#FB923C;shadow=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="480" y="310" width="400" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="designer-flow-2" value="Нарушение: исправить имя или путь&#xa;и сохранить повторно" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#60A5FA;shadow=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="70" y="500" width="320" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="app-start" value="Запуск MediaModule Desktop" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3F4F6;strokeColor=#9CA3AF;shadow=1;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="320" width="440" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="main-window" value="Главное окно приложения&#xa;вкладки: Журнал / Настройки / GigaChat Playground" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3F4F6;strokeColor=#6B7280;shadow=1;fontStyle=1;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="450" width="660" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="journal" value="Экран «Журнал»&#xa;просмотр записей и тегов" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3F4F6;strokeColor=#9CA3AF;shadow=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="940" y="660" width="260" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="settings" value="Экран «Настройки»&#xa;редактирование appsettings" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3F4F6;strokeColor=#9CA3AF;shadow=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="660" width="260" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="playground" value="Экран «GigaChat Playground»&#xa;ручной тест тегирования" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3F4F6;strokeColor=#9CA3AF;shadow=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="660" width="280" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="journal-state" value="Состояния журнала&#xa;загружено / пусто / ошибка БД" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FED7AA;strokeColor=#FB923C;shadow=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="940" y="850" width="260" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="settings-state" value="Состояния настроек&#xa;загружено / сохранено / ошибка" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FED7AA;strokeColor=#FB923C;shadow=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="850" width="260" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="playground-state" value="Состояния playground&#xa;теги сформированы / ошибка ввода" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FED7AA;strokeColor=#FB923C;shadow=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="850" width="280" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="status" value="Общая строка состояния" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3F4F6;strokeColor=#6B7280;shadow=1;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="1040" width="380" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=1.2;strokeColor=#6B7280;" edge="1" parent="1" source="designer" target="designer-flow-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=1.2;strokeColor=#6B7280;" edge="1" parent="1" source="designer-flow-1" target="worker">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="ошибка" style="endArrow=classic;html=1;rounded=0;strokeWidth=1.2;strokeColor=#6B7280;fontSize=11;" edge="1" parent="1" source="worker" target="designer-flow-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="повтор" style="endArrow=classic;html=1;rounded=0;strokeWidth=1.2;strokeColor=#6B7280;fontSize=11;" edge="1" parent="1" source="designer-flow-2" target="designer-flow-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e5" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=1.2;strokeColor=#6B7280;" edge="1" parent="1" source="admin" target="app-start">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=1.2;strokeColor=#6B7280;" edge="1" parent="1" source="app-start" target="main-window">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=1.2;strokeColor=#6B7280;" edge="1" parent="1" source="main-window" target="journal">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=1.2;strokeColor=#6B7280;" edge="1" parent="1" source="main-window" target="settings">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=1.2;strokeColor=#6B7280;" edge="1" parent="1" source="main-window" target="playground">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e10" value="результат обработки" style="endArrow=classic;html=1;rounded=0;strokeWidth=1.2;strokeColor=#6B7280;fontSize=11;" edge="1" parent="1" source="worker" target="journal">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e11" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=1.2;strokeColor=#6B7280;" edge="1" parent="1" source="journal" target="journal-state">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=1.2;strokeColor=#6B7280;" edge="1" parent="1" source="settings" target="settings-state">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=1.2;strokeColor=#6B7280;" edge="1" parent="1" source="playground" target="playground-state">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e14" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=1.2;strokeColor=#6B7280;" edge="1" parent="1" source="journal-state" target="status">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e15" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=1.2;strokeColor=#6B7280;" edge="1" parent="1" source="settings-state" target="status">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e16" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=1.2;strokeColor=#6B7280;" edge="1" parent="1" source="playground-state" target="status">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

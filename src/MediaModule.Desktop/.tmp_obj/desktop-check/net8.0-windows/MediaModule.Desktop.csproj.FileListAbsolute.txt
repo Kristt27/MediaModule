@@ -1,0 +1,11 @@
+C:\Users\Кристина\Desktop\university\4_course\MediaModule\src\MediaModule.Desktop\.tmp_obj\desktop-check\net8.0-windows\MediaModule.Desktop.csproj.AssemblyReference.cache
+C:\Users\Кристина\Desktop\university\4_course\MediaModule\src\MediaModule.Desktop\.tmp_obj\desktop-check\net8.0-windows\MainWindow.baml
+C:\Users\Кристина\Desktop\university\4_course\MediaModule\src\MediaModule.Desktop\.tmp_obj\desktop-check\net8.0-windows\MainWindow.g.cs
+C:\Users\Кристина\Desktop\university\4_course\MediaModule\src\MediaModule.Desktop\.tmp_obj\desktop-check\net8.0-windows\App.g.cs
+C:\Users\Кристина\Desktop\university\4_course\MediaModule\src\MediaModule.Desktop\.tmp_obj\desktop-check\net8.0-windows\MediaModule.Desktop_MarkupCompile.cache
+C:\Users\Кристина\Desktop\university\4_course\MediaModule\src\MediaModule.Desktop\.tmp_obj\desktop-check\net8.0-windows\MediaModule.Desktop.g.resources
+C:\Users\Кристина\Desktop\university\4_course\MediaModule\src\MediaModule.Desktop\.tmp_obj\desktop-check\net8.0-windows\MediaModule.Desktop.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Кристина\Desktop\university\4_course\MediaModule\src\MediaModule.Desktop\.tmp_obj\desktop-check\net8.0-windows\MediaModule.Desktop.AssemblyInfoInputs.cache
+C:\Users\Кристина\Desktop\university\4_course\MediaModule\src\MediaModule.Desktop\.tmp_obj\desktop-check\net8.0-windows\MediaModule.Desktop.AssemblyInfo.cs
+C:\Users\Кристина\Desktop\university\4_course\MediaModule\src\MediaModule.Desktop\.tmp_obj\desktop-check\net8.0-windows\MediaModule.Desktop.csproj.CoreCompileInputs.cache
+C:\Users\Кристина\Desktop\university\4_course\MediaModule\src\MediaModule.Desktop\.tmp_obj\desktop-check\net8.0-windows\MediaModule.Desktop.sourcelink.json
