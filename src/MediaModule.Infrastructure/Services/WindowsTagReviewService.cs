@@ -16,7 +16,8 @@ public sealed class WindowsTagReviewService : ITagReviewService
         OrderData? orderData,
         CancellationToken cancellationToken)
     {
-        if (tags.Count == 0 || cancellationToken.IsCancellationRequested)
+        var visibleTags = FilterVisibleTags(tags);
+        if (visibleTags.Count == 0 || cancellationToken.IsCancellationRequested)
         {
             return Task.FromResult(false);
         }
@@ -26,7 +27,7 @@ public sealed class WindowsTagReviewService : ITagReviewService
         {
             try
             {
-                using var form = BuildForm(filePath, tags, orderData, out var accepted);
+                using var form = BuildForm(filePath, visibleTags, orderData, out var accepted);
                 form.ShowDialog();
                 source.TrySetResult(accepted.Value);
             }
@@ -42,6 +43,26 @@ public sealed class WindowsTagReviewService : ITagReviewService
 
         cancellationToken.Register(() => source.TrySetCanceled(cancellationToken));
         return source.Task;
+    }
+
+    private static IReadOnlyCollection<TagItem> FilterVisibleTags(IReadOnlyCollection<TagItem> tags)
+    {
+        return tags
+            .Where(static tag => !string.IsNullOrWhiteSpace(tag.Key) && !ShouldHideTag(tag.Key))
+            .ToList();
+    }
+
+    private static bool ShouldHideTag(string key)
+    {
+        return key.Trim().ToLowerInvariant() is
+            "composition" or
+            "object_type" or
+            "layout_type" or
+            "design_type" or
+            "mood" or
+            "purpose" or
+            "audience" or
+            "format";
     }
 
     private static Forms.Form BuildForm(
@@ -67,6 +88,12 @@ public sealed class WindowsTagReviewService : ITagReviewService
             BackColor = Color.FromArgb(248, 250, 252),
         };
         form.Load += (_, _) => form.Region = CreateRoundedRegion(form.ClientRectangle, 18);
+        form.Paint += (_, args) =>
+        {
+            args.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            using var pen = new Pen(Color.FromArgb(203, 213, 225), 2f);
+            args.Graphics.DrawRectangle(pen, 1, 1, form.Width - 3, form.Height - 3);
+        };
         form.Shown += (_, _) =>
         {
             form.TopMost = true;
@@ -74,45 +101,24 @@ public sealed class WindowsTagReviewService : ITagReviewService
             form.Activate();
         };
 
-        var header = new Panel
-        {
-            Dock = Forms.DockStyle.Top,
-            Height = 92,
-            BackColor = Color.White,
-        };
-
-        var accent = new Panel
-        {
-            Left = 0,
-            Top = 0,
-            Width = 6,
-            Height = 92,
-            BackColor = Color.FromArgb(255, 42, 0),
-        };
-
-        var title = CreateLabel("GigaChat предложил теги", 28, 18, 560, 28, 13f, FontStyle.Bold, Color.FromArgb(15, 23, 42));
+        var title = CreateLabel("GigaChat предложил теги", 28, 24, 560, 30, 14f, FontStyle.Bold, Color.FromArgb(15, 23, 42));
         var subtitleText = orderData is null
             ? Path.GetFileName(filePath)
             : $"{Path.GetFileName(filePath)}   |   заказ {orderData.OrderId}: {orderData.ClientName} / {orderData.ProductType}";
-        var subtitle = CreateLabel(subtitleText, 28, 50, 650, 22, 9.4f, FontStyle.Regular, Color.FromArgb(71, 85, 105));
-        var closeButton = CreateFlatButton("x", 710, 20, 28, 28, Color.White, Color.FromArgb(100, 116, 139));
+        var subtitle = CreateLabel(subtitleText, 28, 58, 650, 22, 9.4f, FontStyle.Regular, Color.FromArgb(71, 85, 105));
+        var closeButton = CreateFlatButton("x", 710, 26, 28, 28, Color.FromArgb(248, 250, 252), Color.FromArgb(100, 116, 139));
         closeButton.Click += (_, _) =>
         {
             decision.Value = false;
             form.Close();
         };
 
-        header.Controls.Add(accent);
-        header.Controls.Add(title);
-        header.Controls.Add(subtitle);
-        header.Controls.Add(closeButton);
-
         var grid = new Forms.DataGridView
         {
             Left = 24,
-            Top = 112,
+            Top = 120,
             Width = 712,
-            Height = 356,
+            Height = 348,
             ReadOnly = true,
             AllowUserToAddRows = false,
             AllowUserToDeleteRows = false,
@@ -172,7 +178,9 @@ public sealed class WindowsTagReviewService : ITagReviewService
             form.Close();
         };
 
-        form.Controls.Add(header);
+        form.Controls.Add(title);
+        form.Controls.Add(subtitle);
+        form.Controls.Add(closeButton);
         form.Controls.Add(grid);
         form.Controls.Add(hint);
         form.Controls.Add(rejectButton);
@@ -202,14 +210,8 @@ public sealed class WindowsTagReviewService : ITagReviewService
             "visible_text" => "Надписи",
             "dominant_colors" or "colors" or "color" => "Цвета",
             "background" => "Фон",
-            "composition" => "Композиция",
-            "object_type" => "Тип макета",
             "product_type" or "product" => "Продукт",
             "style" => "Стиль",
-            "mood" => "Настроение",
-            "purpose" => "Назначение",
-            "audience" => "Аудитория",
-            "format" => "Формат",
             "client" => "Клиент",
             "order_id" or "orderid" => "Заказ",
             "file_name" => "Файл",

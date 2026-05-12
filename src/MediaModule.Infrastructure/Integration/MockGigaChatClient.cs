@@ -16,12 +16,6 @@ public sealed class MockGigaChatClient : IGigaChatClient
         }
 
         var fileName = Path.GetFileNameWithoutExtension(filePath);
-        var chunks = fileName.Split('_', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        if (chunks.Length >= 2)
-        {
-            tags.Add(new TagItem("object_type", chunks[1].ToLowerInvariant()));
-        }
-
         var fileNameLower = fileName.ToLowerInvariant();
         if (fileNameLower.Contains("minimal"))
         {

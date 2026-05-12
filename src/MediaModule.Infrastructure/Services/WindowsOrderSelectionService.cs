@@ -50,8 +50,8 @@ public sealed class WindowsOrderSelectionService : IOrderSelectionService
         IReadOnlyCollection<OrderData> orders,
         out OrderSelectionState selection)
     {
-        var completedOrders = orders
-            .Where(IsCompletedWithinLastYear)
+        var availableOrders = orders
+            .Where(IsAvailableOrder)
             .OrderByDescending(static order => order.CompletedAtUtc ?? DateTime.UtcNow)
             .ToList();
 
@@ -59,7 +59,7 @@ public sealed class WindowsOrderSelectionService : IOrderSelectionService
         {
             Text = "MediaModule: выбор заказа",
             Width = 760,
-            Height = 560,
+            Height = 590,
             StartPosition = Forms.FormStartPosition.CenterScreen,
             ShowInTaskbar = false,
             TopMost = true,
@@ -69,6 +69,12 @@ public sealed class WindowsOrderSelectionService : IOrderSelectionService
             BackColor = Color.FromArgb(248, 250, 252),
         };
         form.Load += (_, _) => form.Region = CreateRoundedRegion(form.ClientRectangle, 18);
+        form.Paint += (_, args) =>
+        {
+            args.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            using var pen = new Pen(Color.FromArgb(203, 213, 225), 2f);
+            args.Graphics.DrawRectangle(pen, 1, 1, form.Width - 3, form.Height - 3);
+        };
         form.Shown += (_, _) =>
         {
             form.TopMost = true;
@@ -76,55 +82,34 @@ public sealed class WindowsOrderSelectionService : IOrderSelectionService
             form.Activate();
         };
 
-        var header = new Forms.Panel
-        {
-            Dock = Forms.DockStyle.Top,
-            Height = 104,
-            BackColor = Color.White,
-        };
-
-        var accent = new Forms.Panel
-        {
-            Left = 0,
-            Top = 0,
-            Width = 6,
-            Height = 104,
-            BackColor = Color.FromArgb(255, 42, 0),
-        };
-
-        var title = CreateLabel("Выберите заказ из ELMA", 28, 20, 560, 28, 13f, FontStyle.Bold, Color.FromArgb(15, 23, 42));
+        var title = CreateLabel("Выберите заказ из ELMA", 28, 24, 560, 30, 14f, FontStyle.Bold, Color.FromArgb(15, 23, 42));
         var label = CreateLabel(
             $"Файл: {Path.GetFileName(filePath)}\r\nЕсли заказ закрыт раньше, введите данные вручную.",
             28,
-            52,
+            58,
             620,
             42,
             9.5f,
             FontStyle.Regular,
             Color.FromArgb(71, 85, 105));
 
-        var closeButton = CreateFlatButton("x", 710, 22, 28, 28, Color.White, Color.FromArgb(100, 116, 139));
+        var closeButton = CreateFlatButton("x", 704, 26, 28, 28, Color.FromArgb(248, 250, 252), Color.FromArgb(100, 116, 139));
         closeButton.Click += (_, _) =>
         {
             form.DialogResult = Forms.DialogResult.Cancel;
             form.Close();
         };
 
-        header.Controls.Add(accent);
-        header.Controls.Add(title);
-        header.Controls.Add(label);
-        header.Controls.Add(closeButton);
-
         var tabs = new Forms.TabControl
         {
             Left = 24,
             Top = 126,
             Width = 712,
-            Height = 326,
+            Height = 340,
             Font = new Font("Segoe UI", 9.4f, FontStyle.Regular),
         };
 
-        var completedTab = new Forms.TabPage("Открыть завершенные заказы");
+        var completedTab = new Forms.TabPage("Заказы из ELMA");
         var manualTab = new Forms.TabPage("Ввести вручную");
         completedTab.BackColor = Color.White;
         manualTab.BackColor = Color.White;
@@ -143,7 +128,7 @@ public sealed class WindowsOrderSelectionService : IOrderSelectionService
         };
 
         var completedHint = CreateLabel(
-            $"Завершенные заказы за последний год: {completedOrders.Count}.",
+            $"Доступные заказы: {availableOrders.Count}.",
             16,
             16,
             520,
@@ -152,7 +137,7 @@ public sealed class WindowsOrderSelectionService : IOrderSelectionService
             FontStyle.Regular,
             Color.FromArgb(71, 85, 105));
 
-        foreach (var order in completedOrders)
+        foreach (var order in availableOrders)
         {
             listBox.Items.Add(new OrderDisplay(order));
         }
@@ -163,7 +148,7 @@ public sealed class WindowsOrderSelectionService : IOrderSelectionService
         }
         else
         {
-            completedHint.Text = "За последний год завершенные заказы не найдены. Заполните заказ вручную.";
+            completedHint.Text = "Заказы не найдены. Заполните заказ вручную.";
         }
 
         completedTab.Controls.Add(completedHint);
@@ -195,7 +180,7 @@ public sealed class WindowsOrderSelectionService : IOrderSelectionService
 
         tabs.TabPages.Add(completedTab);
         tabs.TabPages.Add(manualTab);
-        if (completedOrders.Count == 0)
+        if (availableOrders.Count == 0)
         {
             tabs.SelectedTab = manualTab;
             manualOrderIdBox.Focus();
@@ -210,7 +195,7 @@ public sealed class WindowsOrderSelectionService : IOrderSelectionService
             manualProductBox);
         var selectionState = selection;
 
-        var chooseButton = CreateFlatButton("Выбрать", 620, 486, 116, 34, Color.FromArgb(255, 42, 0), Color.White);
+        var chooseButton = CreateFlatButton("Выбрать", 620, 526, 116, 34, Color.FromArgb(255, 42, 0), Color.White);
         chooseButton.Click += (_, _) =>
         {
             if (selectionState.GetSelectedOrder() is null)
@@ -227,7 +212,7 @@ public sealed class WindowsOrderSelectionService : IOrderSelectionService
             form.Close();
         };
 
-        var cancelButton = CreateFlatButton("Отмена", 492, 486, 116, 34, Color.White, Color.FromArgb(71, 85, 105));
+        var cancelButton = CreateFlatButton("Отмена", 492, 526, 116, 34, Color.White, Color.FromArgb(71, 85, 105));
         cancelButton.Click += (_, _) =>
         {
             form.DialogResult = Forms.DialogResult.Cancel;
@@ -235,16 +220,18 @@ public sealed class WindowsOrderSelectionService : IOrderSelectionService
         };
 
         var hint = CreateLabel(
-            "Список берется из ELMA/API или из mock-настроек. В локальную SQLite-базу записывается только результат обработки.",
+            "Список берется из CRM ELMA365 через API. Если заказ недоступен, заполните данные вручную.",
             24,
-            466,
+            486,
             430,
-            48,
+            56,
             9.1f,
             FontStyle.Regular,
             Color.FromArgb(100, 116, 139));
 
-        form.Controls.Add(header);
+        form.Controls.Add(title);
+        form.Controls.Add(label);
+        form.Controls.Add(closeButton);
         form.Controls.Add(tabs);
         form.Controls.Add(hint);
         form.Controls.Add(chooseButton);
@@ -255,19 +242,24 @@ public sealed class WindowsOrderSelectionService : IOrderSelectionService
         return form;
     }
 
-    private static bool IsCompletedWithinLastYear(OrderData order)
+    private static bool IsAvailableOrder(OrderData order)
     {
         var status = order.Status?.Trim();
-        var completedStatus = string.IsNullOrWhiteSpace(status) ||
+        if (string.IsNullOrWhiteSpace(status))
+        {
+            return true;
+        }
+
+        var closedStatus =
             status.Equals("completed", StringComparison.OrdinalIgnoreCase) ||
             status.Equals("done", StringComparison.OrdinalIgnoreCase) ||
             status.Equals("closed", StringComparison.OrdinalIgnoreCase) ||
             status.Equals("завершен", StringComparison.OrdinalIgnoreCase) ||
             status.Equals("завершён", StringComparison.OrdinalIgnoreCase);
 
-        if (!completedStatus)
+        if (!closedStatus)
         {
-            return false;
+            return true;
         }
 
         return order.CompletedAtUtc is null || order.CompletedAtUtc >= DateTime.UtcNow.AddYears(-1);
@@ -376,8 +368,7 @@ public sealed class WindowsOrderSelectionService : IOrderSelectionService
                     ? null
                     : new OrderData(orderId, client, product)
                     {
-                        Status = "Completed",
-                        CompletedAtUtc = DateTime.UtcNow,
+                        Status = "Manual",
                     };
             }
 

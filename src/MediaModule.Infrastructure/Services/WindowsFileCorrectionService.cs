@@ -59,8 +59,8 @@ public sealed class WindowsFileCorrectionService : IFileCorrectionService
         var form = new Forms.Form
         {
             Text = "MediaModule: рекомендация по файлу",
-            Width = 720,
-            Height = 500,
+            Width = 760,
+            Height = 590,
             StartPosition = Forms.FormStartPosition.CenterScreen,
             ShowInTaskbar = false,
             TopMost = true,
@@ -71,6 +71,12 @@ public sealed class WindowsFileCorrectionService : IFileCorrectionService
             ForeColor = Color.FromArgb(15, 23, 42),
         };
         form.Load += (_, _) => form.Region = CreateRoundedRegion(form.ClientRectangle, 18);
+        form.Paint += (_, args) =>
+        {
+            args.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            using var pen = new Pen(Color.FromArgb(203, 213, 225), 2f);
+            args.Graphics.DrawRectangle(pen, 1, 1, form.Width - 3, form.Height - 3);
+        };
         form.Shown += (_, _) =>
         {
             form.TopMost = true;
@@ -78,72 +84,62 @@ public sealed class WindowsFileCorrectionService : IFileCorrectionService
             form.Activate();
         };
 
-        var header = new Forms.Panel
-        {
-            Dock = Forms.DockStyle.Top,
-            Height = 104,
-            BackColor = Color.White,
-        };
-        var accent = new Forms.Panel
-        {
-            Left = 0,
-            Top = 0,
-            Width = 6,
-            Height = 104,
-            BackColor = Color.FromArgb(255, 42, 0),
-        };
-        var title = CreateLabel("Рекомендация по названию и папке", 28, 20, 560, 28, 13f, FontStyle.Bold, Color.FromArgb(15, 23, 42));
+        var title = CreateLabel("Рекомендация по названию и папке", 28, 24, 620, 30, 14f, FontStyle.Bold, Color.FromArgb(15, 23, 42));
         var subtitle = CreateLabel(
             "Файл можно оставить как есть или перенести в рекомендуемую структуру хранения.",
             28,
-            54,
-            610,
+            58,
+            650,
             38,
             9.5f,
             FontStyle.Regular,
             Color.FromArgb(71, 85, 105));
-        var closeButton = CreateFlatButton("x", 670, 22, 28, 28, Color.White, Color.FromArgb(100, 116, 139));
+        var closeButton = CreateFlatButton("x", 704, 24, 28, 28, Color.FromArgb(248, 250, 252), Color.FromArgb(100, 116, 139));
         closeButton.Click += (_, _) =>
         {
-            actionHolder.Value = FileCorrectionAction.None;
+            actionHolder.Value = FileCorrectionAction.CancelProcessing;
             form.Close();
         };
 
-        header.Controls.Add(accent);
-        header.Controls.Add(title);
-        header.Controls.Add(subtitle);
-        header.Controls.Add(closeButton);
-
-        var reasonLabel = CreateLabel("Причина", 28, 126, 110, 22, 9.2f, FontStyle.Bold, Color.FromArgb(15, 23, 42));
+        var reasonLabel = CreateLabel("Причина", 28, 118, 110, 22, 9.2f, FontStyle.Bold, Color.FromArgb(15, 23, 42));
         var reasonBox = CreateReadonlyBox(
             string.IsNullOrWhiteSpace(reason) ? "Имя или расположение файла не соответствуют правилам." : reason,
             28,
-            152,
-            664,
+            144,
+            704,
             52,
             multiline: true);
 
-        var currentLabel = CreateLabel("Сейчас", 28, 222, 110, 22, 9.2f, FontStyle.Bold, Color.FromArgb(15, 23, 42));
-        var currentBox = CreateReadonlyBox(sourceFilePath, 28, 248, 664, 30, multiline: false);
+        var currentLabel = CreateLabel("Сейчас", 28, 214, 110, 22, 9.2f, FontStyle.Bold, Color.FromArgb(15, 23, 42));
+        var currentBox = CreateReadonlyBox(sourceFilePath, 28, 240, 704, 34, multiline: false);
 
-        var targetLabel = CreateLabel("Рекомендуется", 28, 296, 160, 22, 9.2f, FontStyle.Bold, Color.FromArgb(15, 23, 42));
-        var targetNameLabel = CreateLabel("Имя файла", 28, 326, 120, 22, 9.2f, FontStyle.Regular, Color.FromArgb(71, 85, 105));
-        var targetNameBox = CreateReadonlyBox(recommendedFileName, 152, 322, 540, 30, multiline: false);
-        var targetPathLabel = CreateLabel("Папка", 28, 366, 120, 22, 9.2f, FontStyle.Regular, Color.FromArgb(71, 85, 105));
-        var targetPathBox = CreateReadonlyBox(targetPath, 152, 362, 540, 30, multiline: false);
+        var targetLabel = CreateLabel("Рекомендуется", 28, 300, 160, 22, 9.2f, FontStyle.Bold, Color.FromArgb(15, 23, 42));
+        var targetNameLabel = CreateLabel("Имя файла", 28, 330, 120, 22, 9.2f, FontStyle.Regular, Color.FromArgb(71, 85, 105));
+        var targetNameBox = CreateReadonlyBox(recommendedFileName, 152, 326, 580, 34, multiline: false);
+        var targetDirectoryLabel = CreateLabel("Папка", 28, 374, 120, 22, 9.2f, FontStyle.Regular, Color.FromArgb(71, 85, 105));
+        var targetDirectoryBox = CreateReadonlyBox(FormatMissingDirectory(recommendedDirectory), 152, 370, 580, 34, multiline: false);
+        var targetPathLabel = CreateLabel("Итоговый путь", 28, 418, 120, 22, 9.2f, FontStyle.Regular, Color.FromArgb(71, 85, 105));
+        var targetPathBox = CreateReadonlyBox(FormatMissingDirectory(targetPath), 152, 414, 580, 34, multiline: false);
 
         var hint = CreateLabel(
-            "При подтверждении файл будет переименован и перенесен. При отказе он останется на текущем месте, а нарушение попадет в журнал.",
+            "При подтверждении файл будет переименован и перенесен. Если оставить как есть, нарушение попадет в журнал.",
             28,
-            414,
-            390,
+            472,
+            704,
             44,
             9.1f,
             FontStyle.Regular,
             Color.FromArgb(100, 116, 139));
 
-        var keepButton = CreateFlatButton("Оставить как есть", 360, 428, 150, 34, Color.White, Color.FromArgb(71, 85, 105));
-        var moveButton = CreateFlatButton("Исправить и перенести", 522, 428, 170, 34, Color.FromArgb(255, 42, 0), Color.White);
+        var backButton = CreateFlatButton("Назад", 278, 530, 110, 34, Color.White, Color.FromArgb(71, 85, 105));
+        var keepButton = CreateFlatButton("Оставить как есть", 400, 530, 150, 34, Color.White, Color.FromArgb(71, 85, 105));
+        var moveButton = CreateFlatButton("Исправить и перенести", 562, 530, 170, 34, Color.FromArgb(255, 42, 0), Color.White);
+
+        backButton.Click += (_, _) =>
+        {
+            actionHolder.Value = FileCorrectionAction.BackToOrderSelection;
+            form.Close();
+        };
 
         keepButton.Click += (_, _) =>
         {
@@ -157,7 +153,9 @@ public sealed class WindowsFileCorrectionService : IFileCorrectionService
             form.Close();
         };
 
-        form.Controls.Add(header);
+        form.Controls.Add(title);
+        form.Controls.Add(subtitle);
+        form.Controls.Add(closeButton);
         form.Controls.Add(reasonLabel);
         form.Controls.Add(reasonBox);
         form.Controls.Add(currentLabel);
@@ -165,9 +163,12 @@ public sealed class WindowsFileCorrectionService : IFileCorrectionService
         form.Controls.Add(targetLabel);
         form.Controls.Add(targetNameLabel);
         form.Controls.Add(targetNameBox);
+        form.Controls.Add(targetDirectoryLabel);
+        form.Controls.Add(targetDirectoryBox);
         form.Controls.Add(targetPathLabel);
         form.Controls.Add(targetPathBox);
         form.Controls.Add(hint);
+        form.Controls.Add(backButton);
         form.Controls.Add(keepButton);
         form.Controls.Add(moveButton);
 
@@ -187,7 +188,7 @@ public sealed class WindowsFileCorrectionService : IFileCorrectionService
             BackColor = Color.Transparent,
         };
 
-    private static Forms.TextBox CreateReadonlyBox(string text, int left, int top, int width, int height, bool multiline) =>
+    private static Forms.Label CreateReadonlyBox(string text, int left, int top, int width, int height, bool multiline) =>
         new()
         {
             Text = text,
@@ -195,14 +196,20 @@ public sealed class WindowsFileCorrectionService : IFileCorrectionService
             Top = top,
             Width = width,
             Height = height,
-            Multiline = multiline,
-            ReadOnly = true,
             BorderStyle = Forms.BorderStyle.FixedSingle,
-            BackColor = Color.White,
+            BackColor = Color.FromArgb(248, 250, 252),
             ForeColor = Color.FromArgb(15, 23, 42),
             Font = new Font("Segoe UI", 9.4f, FontStyle.Regular),
-            ScrollBars = multiline ? Forms.ScrollBars.Vertical : Forms.ScrollBars.None,
+            Padding = new Forms.Padding(8, multiline ? 6 : 5, 8, 4),
+            AutoEllipsis = true,
         };
+
+    private static string FormatMissingDirectory(string value)
+    {
+        return string.IsNullOrWhiteSpace(value)
+            ? "Не удалось определить рекомендуемую папку. Проверьте корневую директорию и данные заказа."
+            : value;
+    }
 
     private static Forms.Button CreateFlatButton(string text, int left, int top, int width, int height, Color backColor, Color foreColor)
     {

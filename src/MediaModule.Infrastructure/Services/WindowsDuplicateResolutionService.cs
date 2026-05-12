@@ -68,6 +68,12 @@ public sealed class WindowsDuplicateResolutionService : IDuplicateResolutionServ
             ForeColor = Color.FromArgb(15, 23, 42),
         };
         form.Load += (_, _) => form.Region = CreateRoundedRegion(form.ClientRectangle, 18);
+        form.Paint += (_, args) =>
+        {
+            args.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            using var pen = new Pen(Color.FromArgb(203, 213, 225), 2f);
+            args.Graphics.DrawRectangle(pen, 1, 1, form.Width - 3, form.Height - 3);
+        };
         form.Shown += (_, _) =>
         {
             form.TopMost = true;
@@ -75,41 +81,22 @@ public sealed class WindowsDuplicateResolutionService : IDuplicateResolutionServ
             form.Activate();
         };
 
-        var header = new Forms.Panel
-        {
-            Dock = Forms.DockStyle.Top,
-            Height = 104,
-            BackColor = Color.White,
-        };
-        var accent = new Forms.Panel
-        {
-            Left = 0,
-            Top = 0,
-            Width = 6,
-            Height = 104,
-            BackColor = Color.FromArgb(245, 158, 11),
-        };
-        var title = CreateLabel("Найден похожий файл", 28, 20, 560, 28, 13f, FontStyle.Bold, Color.FromArgb(15, 23, 42));
+        var title = CreateLabel("Найден похожий файл", 28, 24, 560, 30, 14f, FontStyle.Bold, Color.FromArgb(15, 23, 42));
         var subtitle = CreateLabel(
             BuildSubtitle(orderData),
             28,
-            52,
+            58,
             720,
             42,
             9.4f,
             FontStyle.Regular,
             Color.FromArgb(71, 85, 105));
-        var closeButton = CreateFlatButton("x", 810, 22, 28, 28, Color.White, Color.FromArgb(100, 116, 139));
+        var closeButton = CreateFlatButton("x", 810, 26, 28, 28, Color.FromArgb(248, 250, 252), Color.FromArgb(100, 116, 139));
         closeButton.Click += (_, _) =>
         {
             actionHolder.Value = DuplicateResolutionAction.SaveAsNew;
             form.Close();
         };
-
-        header.Controls.Add(accent);
-        header.Controls.Add(title);
-        header.Controls.Add(subtitle);
-        header.Controls.Add(closeButton);
 
         var currentPanel = CreatePreviewPanel("Новый файл", currentFilePath, 28, 126);
         var duplicatePanel = CreatePreviewPanel("Похожий файл в журнале", duplicateFilePath, 438, 126);
@@ -134,7 +121,9 @@ public sealed class WindowsDuplicateResolutionService : IDuplicateResolutionServ
         cancelButton.Click += (_, _) => CloseWith(form, actionHolder, DuplicateResolutionAction.CancelSave);
         replaceButton.Click += (_, _) => CloseWith(form, actionHolder, DuplicateResolutionAction.ReplaceExisting);
 
-        form.Controls.Add(header);
+        form.Controls.Add(title);
+        form.Controls.Add(subtitle);
+        form.Controls.Add(closeButton);
         form.Controls.Add(currentPanel);
         form.Controls.Add(duplicatePanel);
         form.Controls.Add(hint);

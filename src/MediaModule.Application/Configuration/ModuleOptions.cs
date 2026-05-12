@@ -6,7 +6,7 @@ public sealed class ModuleOptions
 {
     public string RootDirectory { get; set; } = "D:\\Design";
 
-    public string FileNameRegexPattern { get; set; } = "^[\\p{L}0-9]+_[\\p{L}0-9]+_20\\d{2}_\\d+\\.[A-Za-z0-9]+$";
+    public string FileNameRegexPattern { get; set; } = "^[\\p{L}0-9]+_[\\p{L}0-9]+_20\\d{2}(?:_\\d+)?\\.[A-Za-z0-9]+$";
 
     public bool ValidateFileName { get; set; } = true;
 
@@ -45,6 +45,8 @@ public sealed class ModuleOptions
 
     public ElmaMockOptions ElmaMock { get; set; } = new();
 
+    public ElmaOptions Elma { get; set; } = new();
+
     public MiniCrmOptions MiniCrm { get; set; } = new();
 
     public GigaChatOptions GigaChat { get; set; } = new();
@@ -53,6 +55,37 @@ public sealed class ModuleOptions
 public sealed class ElmaMockOptions
 {
     public List<OrderData> Orders { get; set; } = new();
+}
+
+public sealed class ElmaOptions
+{
+    public bool Enabled { get; set; }
+
+    public bool UseMockFallback { get; set; }
+
+    public string Token { get; set; } = string.Empty;
+
+    public string BaseUrl { get; set; } = string.Empty;
+
+    public string Namespace { get; set; } = string.Empty;
+
+    public string AppCode { get; set; } = string.Empty;
+
+    public int PageSize { get; set; } = 1000;
+
+    public int TimeoutSeconds { get; set; } = 30;
+
+    public string RequestMethod { get; set; } = "POST";
+
+    public string OrderIdField { get; set; } = "order_id";
+
+    public string ClientNameField { get; set; } = "client_name";
+
+    public string ProductTypeField { get; set; } = "product_type";
+
+    public string StatusField { get; set; } = "status";
+
+    public string CompletedAtField { get; set; } = "completed_at";
 }
 
 public sealed class MiniCrmOptions

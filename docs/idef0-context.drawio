@@ -1,0 +1,137 @@
+﻿<mxfile host="app.diagrams.net" modified="2026-05-11T00:00:00.000Z" agent="Codex" version="24.7.17">
+<diagram id="context-a0" name="IDEF0 A-0">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title1" value="Контекстная модель A-0: Обработка графического файла" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=18;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="250" y="30" width="670" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="a0" value="Обработка&#xa;графического файла" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#111111;strokeWidth=2;fillColor=#ffffff;fontSize=16;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="420" y="290" width="320" height="170" as="geometry"/>
+        </mxCell>
+        <mxCell id="node_a0" value="A-0" style="text;html=1;strokeColor=none;fillColor=none;align=right;verticalAlign=bottom;fontSize=13;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="692" y="430" width="40" height="20" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="in1_label" value="Графический файл" style="text;html=1;strokeColor=none;fillColor=none;align=right;verticalAlign=middle;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="70" y="300" width="210" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="in2_label" value="Имя файла" style="text;html=1;strokeColor=none;fillColor=none;align=right;verticalAlign=middle;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="70" y="335" width="210" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="in3_label" value="Путь сохранения файла" style="text;html=1;strokeColor=none;fillColor=none;align=right;verticalAlign=middle;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="70" y="370" width="210" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="in4_label" value="Данные, введенные пользователем" style="text;html=1;strokeColor=none;fillColor=none;align=right;verticalAlign=middle;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="45" y="405" width="235" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="in1" value="" style="endArrow=block;html=1;rounded=0;strokeWidth=1.5" edge="1" parent="1" target="a0">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="285" y="312" as="sourcePoint"/><mxPoint x="420" y="312" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="in2" value="" style="endArrow=block;html=1;rounded=0;strokeWidth=1.5" edge="1" parent="1" target="a0">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="285" y="347" as="sourcePoint"/><mxPoint x="420" y="347" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="in3" value="" style="endArrow=block;html=1;rounded=0;strokeWidth=1.5" edge="1" parent="1" target="a0">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="285" y="382" as="sourcePoint"/><mxPoint x="420" y="382" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="in4" value="" style="endArrow=block;html=1;rounded=0;strokeWidth=1.5" edge="1" parent="1" target="a0">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="285" y="417" as="sourcePoint"/><mxPoint x="420" y="417" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <mxCell id="ctrl1_label" value="Правила&#xa;именования" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=bottom;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="315" y="125" width="130" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="ctrl2_label" value="Структура&#xa;каталогов" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=bottom;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="455" y="125" width="130" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="ctrl3_label" value="Настройки&#xa;модуля" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=bottom;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="595" y="125" width="130" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="ctrl4_label" value="Правила обработки&#xa;дубликатов" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=bottom;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="735" y="125" width="150" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="ctrl5_label" value="Требования&#xa;к тегированию" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=bottom;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="890" y="125" width="130" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="ctrl1" value="" style="endArrow=block;html=1;rounded=0;strokeWidth=1.5" edge="1" parent="1" target="a0">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="380" y="175" as="sourcePoint"/><mxPoint x="455" y="290" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="ctrl2" value="" style="endArrow=block;html=1;rounded=0;strokeWidth=1.5" edge="1" parent="1" target="a0">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="520" y="175" as="sourcePoint"/><mxPoint x="520" y="290" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="ctrl3" value="" style="endArrow=block;html=1;rounded=0;strokeWidth=1.5" edge="1" parent="1" target="a0">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="660" y="175" as="sourcePoint"/><mxPoint x="585" y="290" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="ctrl4" value="" style="endArrow=block;html=1;rounded=0;strokeWidth=1.5" edge="1" parent="1" target="a0">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="810" y="175" as="sourcePoint"/><mxPoint x="650" y="290" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="ctrl5" value="" style="endArrow=block;html=1;rounded=0;strokeWidth=1.5" edge="1" parent="1" target="a0">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="955" y="175" as="sourcePoint"/><mxPoint x="715" y="290" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <mxCell id="out1_label" value="Обработанный файл" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="875" y="290" width="230" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="out2_label" value="Запись в журнале операций" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="875" y="325" width="230" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="out3_label" value="Поисковые теги" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="875" y="360" width="230" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="out4_label" value="Уведомление пользователю" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="875" y="395" width="230" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="out5_label" value="Сведения о похожих файлах" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="875" y="430" width="230" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="out1" value="" style="endArrow=block;html=1;rounded=0;strokeWidth=1.5" edge="1" parent="1" source="a0">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="740" y="302" as="sourcePoint"/><mxPoint x="865" y="302" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="out2" value="" style="endArrow=block;html=1;rounded=0;strokeWidth=1.5" edge="1" parent="1" source="a0">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="740" y="337" as="sourcePoint"/><mxPoint x="865" y="337" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="out3" value="" style="endArrow=block;html=1;rounded=0;strokeWidth=1.5" edge="1" parent="1" source="a0">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="740" y="372" as="sourcePoint"/><mxPoint x="865" y="372" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="out4" value="" style="endArrow=block;html=1;rounded=0;strokeWidth=1.5" edge="1" parent="1" source="a0">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="740" y="407" as="sourcePoint"/><mxPoint x="865" y="407" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="out5" value="" style="endArrow=block;html=1;rounded=0;strokeWidth=1.5" edge="1" parent="1" source="a0">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="740" y="442" as="sourcePoint"/><mxPoint x="865" y="442" as="targetPoint"/></mxGeometry>
+        </mxCell>
+
+        <mxCell id="mech1_label" value="Пользователь" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="230" y="625" width="130" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="mech2_label" value="Фоновый модуль&#xa;обработки файлов" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="380" y="625" width="150" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="mech3_label" value="CRM ELMA" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="550" y="625" width="100" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="mech4_label" value="GigaChat" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="670" y="625" width="100" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="mech5_label" value="SQLite" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="790" y="625" width="100" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="mech1" value="" style="endArrow=block;html=1;rounded=0;strokeWidth=1.5" edge="1" parent="1" target="a0">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="295" y="620" as="sourcePoint"/><mxPoint x="470" y="460" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="mech2" value="" style="endArrow=block;html=1;rounded=0;strokeWidth=1.5" edge="1" parent="1" target="a0">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="455" y="620" as="sourcePoint"/><mxPoint x="535" y="460" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="mech3" value="" style="endArrow=block;html=1;rounded=0;strokeWidth=1.5" edge="1" parent="1" target="a0">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="600" y="620" as="sourcePoint"/><mxPoint x="595" y="460" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="mech4" value="" style="endArrow=block;html=1;rounded=0;strokeWidth=1.5" edge="1" parent="1" target="a0">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="720" y="620" as="sourcePoint"/><mxPoint x="650" y="460" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="mech5" value="" style="endArrow=block;html=1;rounded=0;strokeWidth=1.5" edge="1" parent="1" target="a0">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="840" y="620" as="sourcePoint"/><mxPoint x="705" y="460" as="targetPoint"/></mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

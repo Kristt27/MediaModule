@@ -85,16 +85,30 @@ public sealed class FileProcessingOrchestrator
             return;
         }
 
+        var rememberProcessedState = true;
+
         try
         {
             _logger.LogInformation("Начата обработка файла: {Path} ({ChangeType})", path, fileEvent.ChangeType);
+
+            // РЎРЅР°С‡Р°Р»Р° РїРѕРґС‚СЏРіРёРІР°РµРј Р±РёР·РЅРµСЃ-РєРѕРЅС‚РµРєСЃС‚ Р·Р°РєР°Р·Р° Рё РїСЂРѕРІРµСЂСЏРµРј РїСЂР°РІРёР»Р° РёРјРµРЅРё/РїСѓС‚Рё.
+            var orderResolution = await ResolveOrderAsync(path, originalFingerprint, cancellationToken);
+            if (orderResolution.Cancelled)
+            {
+                rememberProcessedState = false;
+                await _notificationService.NotifyAsync(
+                    "MediaModule: проверка отменена",
+                    $"Файл не обрабатывался:\n{Path.GetFileName(path)}",
+                    cancellationToken);
+                return;
+            }
+
+            var orderData = orderResolution.OrderData;
             await _notificationService.NotifyAsync(
                 "MediaModule: подождите",
                 $"Файл сохранен, начинаю проверку:\n{Path.GetFileName(path)}",
                 cancellationToken);
 
-            // РЎРЅР°С‡Р°Р»Р° РїРѕРґС‚СЏРіРёРІР°РµРј Р±РёР·РЅРµСЃ-РєРѕРЅС‚РµРєСЃС‚ Р·Р°РєР°Р·Р° Рё РїСЂРѕРІРµСЂСЏРµРј РїСЂР°РІРёР»Р° РёРјРµРЅРё/РїСѓС‚Рё.
-            var orderData = await ResolveOrderAsync(path, originalFingerprint, cancellationToken);
             var currentPath = path;
             var validation = _ruleValidator.Validate(currentPath, orderData);
             var hasViolation = validation.HasViolations;
@@ -118,25 +132,79 @@ public sealed class FileProcessingOrchestrator
                     var notificationMessage = BuildViolationNotification(validation, violationMessage, rejectedPath is not null);
 
                     await _notificationService.NotifyAsync("MediaModule: проверка сохранения", notificationMessage, cancellationToken);
-                    var correctedPath = await TryApplyUserCorrectionAsync(
-                        rejectedPath,
-                        validation,
-                        violationMessage,
-                        cancellationToken);
-
-                    if (correctedPath is not null)
+                    while (true)
                     {
-                        currentPath = correctedPath;
-                        hasViolation = false;
-                        errorIgnored = false;
-                        _violationPolicy.Reset(violationKey);
-                        await _notificationService.NotifyAsync(
-                            "MediaModule: исправление принято",
-                            $"Файл перемещен, продолжаю проверку и тегирование:\n{Path.GetFileName(correctedPath)}",
+                        var correction = await TryApplyUserCorrectionAsync(
+                            rejectedPath,
+                            validation,
+                            violationMessage,
                             cancellationToken);
-                    }
-                    else
-                    {
+
+                        if (correction.Action == FileCorrectionAction.AcceptAndMove && correction.CorrectedPath is not null)
+                        {
+                            currentPath = correction.CorrectedPath;
+                            hasViolation = false;
+                            errorIgnored = false;
+                            _violationPolicy.Reset(violationKey);
+                            await _notificationService.NotifyAsync(
+                                "MediaModule: исправление принято",
+                                $"Файл перемещен, продолжаю проверку и тегирование:\n{Path.GetFileName(correction.CorrectedPath)}",
+                                cancellationToken);
+                            break;
+                        }
+
+                        if (correction.Action == FileCorrectionAction.BackToOrderSelection)
+                        {
+                            var selectedOrder = await SelectAnotherOrderAsync(rejectedPath ?? path, cancellationToken);
+                            if (selectedOrder is null)
+                            {
+                                rememberProcessedState = false;
+                                await TryRestoreRejectedFileAsync(rejectedPath, path, cancellationToken);
+                                await _notificationService.NotifyAsync(
+                                    "MediaModule: проверка отменена",
+                                    $"Файл не обрабатывался:\n{Path.GetFileName(path)}",
+                                    cancellationToken);
+                                return;
+                            }
+
+                            orderData = selectedOrder;
+                            if (!string.IsNullOrWhiteSpace(rejectedPath))
+                            {
+                                var selectedFingerprint = FileProcessingFingerprint.TryCreate(rejectedPath);
+                                if (selectedFingerprint is not null)
+                                {
+                                    _selectedOrders[rejectedPath] = new SelectedOrderContext(selectedOrder, selectedFingerprint);
+                                }
+                            }
+
+                            validation = _ruleValidator.Validate(rejectedPath ?? path, orderData);
+                            hasViolation = validation.HasViolations;
+                            violationMessage = string.Join("; ", validation.FailureReasons);
+                            recommendation = BuildRecommendation(rejectedPath ?? path, validation);
+                            message = $"Сохранение запрещено: {violationMessage}{recommendation}{rollbackMessage}";
+
+                            if (!hasViolation)
+                            {
+                                currentPath = rejectedPath ?? path;
+                                errorIgnored = false;
+                                _violationPolicy.Reset(violationKey);
+                                break;
+                            }
+
+                            continue;
+                        }
+
+                        if (correction.Action == FileCorrectionAction.CancelProcessing)
+                        {
+                            rememberProcessedState = false;
+                            await TryRestoreRejectedFileAsync(rejectedPath, path, cancellationToken);
+                            await _notificationService.NotifyAsync(
+                                "MediaModule: проверка отменена",
+                                $"Файл не обрабатывался:\n{Path.GetFileName(path)}",
+                                cancellationToken);
+                            return;
+                        }
+
                         await SaveLogAsync(rejectedPath ?? path, ProcessingResult.Blocked, false, message, orderData, orderData?.OrderId, null, Array.Empty<TagItem>(), cancellationToken);
                         return;
                     }
@@ -252,7 +320,7 @@ public sealed class FileProcessingOrchestrator
                     $"{BuildTaggingStatusText(hasViolation)} Получаю описание и поисковые теги:\n{Path.GetFileName(currentPath)}",
                     cancellationToken);
 
-                tags = await _gigaChatClient.GenerateTagsAsync(currentPath, orderData, cancellationToken);
+                tags = FilterSearchTags(await _gigaChatClient.GenerateTagsAsync(currentPath, orderData, cancellationToken));
 
                 if (tags.Count > 0 && _options.CurrentValue.AutoAcceptTags)
                 {
@@ -323,7 +391,7 @@ public sealed class FileProcessingOrchestrator
         }
         finally
         {
-            CompleteFileEvent(path, originalFingerprint);
+            CompleteFileEvent(path, originalFingerprint, rememberProcessedState);
         }
     }
 
@@ -378,9 +446,16 @@ public sealed class FileProcessingOrchestrator
         }
     }
 
-    private void CompleteFileEvent(string filePath, FileProcessingFingerprint fingerprint)
+    private void CompleteFileEvent(
+        string filePath,
+        FileProcessingFingerprint fingerprint,
+        bool rememberProcessedState)
     {
-        _processedFileEvents[filePath] = fingerprint;
+        if (rememberProcessedState)
+        {
+            _processedFileEvents[filePath] = fingerprint;
+        }
+
         _ = ((ICollection<KeyValuePair<string, FileProcessingFingerprint>>)_activeFileEvents)
             .Remove(new KeyValuePair<string, FileProcessingFingerprint>(filePath, fingerprint));
     }
@@ -470,7 +545,7 @@ public sealed class FileProcessingOrchestrator
         }
     }
 
-    private async Task<string?> TryApplyUserCorrectionAsync(
+    private async Task<CorrectionResolution> TryApplyUserCorrectionAsync(
         string? rejectedPath,
         FileValidationResult validation,
         string violationMessage,
@@ -481,7 +556,7 @@ public sealed class FileProcessingOrchestrator
             string.IsNullOrWhiteSpace(validation.RecommendedFileName) ||
             !File.Exists(rejectedPath))
         {
-            return null;
+            return new CorrectionResolution(FileCorrectionAction.None, null);
         }
 
         var action = await _fileCorrectionService.RequestCorrectionAsync(
@@ -491,9 +566,9 @@ public sealed class FileProcessingOrchestrator
             violationMessage,
             cancellationToken);
 
-        if (action == FileCorrectionAction.None)
+        if (action != FileCorrectionAction.AcceptAndMove)
         {
-            return null;
+            return new CorrectionResolution(action, null);
         }
 
         Directory.CreateDirectory(validation.RecommendedDirectory);
@@ -503,7 +578,42 @@ public sealed class FileProcessingOrchestrator
             validation.RecommendedFileName);
 
         File.Move(rejectedPath, targetPath);
-        return targetPath;
+        return new CorrectionResolution(action, targetPath);
+    }
+
+    private async Task TryRestoreRejectedFileAsync(
+        string? rejectedPath,
+        string originalPath,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(rejectedPath) ||
+            !File.Exists(rejectedPath) ||
+            PathsEqual(rejectedPath, originalPath))
+        {
+            return;
+        }
+
+        try
+        {
+            await WaitForFileReadyAsync(rejectedPath, cancellationToken);
+            var originalDirectory = Path.GetDirectoryName(originalPath);
+            if (!string.IsNullOrWhiteSpace(originalDirectory))
+            {
+                Directory.CreateDirectory(originalDirectory);
+            }
+
+            var targetPath = File.Exists(originalPath)
+                ? BuildAvailableTargetPath(
+                    Path.GetDirectoryName(originalPath) ?? AppContext.BaseDirectory,
+                    Path.GetFileName(originalPath))
+                : originalPath;
+
+            File.Move(rejectedPath, targetPath);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            _logger.LogWarning(ex, "Не удалось вернуть файл из служебной папки после отмены проверки: {Path}", rejectedPath);
+        }
     }
 
     private static string BuildAvailableTargetPath(string directory, string fileName)
@@ -516,18 +626,28 @@ public sealed class FileProcessingOrchestrator
 
         var name = Path.GetFileNameWithoutExtension(fileName);
         var extension = Path.GetExtension(fileName);
+        var baseName = name;
         var index = 1;
-        var candidate = Path.Combine(directory, $"{name}({index}){extension}");
+        var separatorIndex = name.LastIndexOf('_');
+        if (separatorIndex > 0 &&
+            separatorIndex < name.Length - 1 &&
+            int.TryParse(name[(separatorIndex + 1)..], out var parsedVersion))
+        {
+            baseName = name[..separatorIndex];
+            index = parsedVersion + 1;
+        }
+
+        var candidate = Path.Combine(directory, $"{baseName}_{index}{extension}");
         while (File.Exists(candidate))
         {
             index++;
-            candidate = Path.Combine(directory, $"{name}({index}){extension}");
+            candidate = Path.Combine(directory, $"{baseName}_{index}{extension}");
         }
 
         return candidate;
     }
 
-    private async Task<OrderData?> ResolveOrderAsync(
+    private async Task<OrderResolution> ResolveOrderAsync(
         string path,
         FileProcessingFingerprint fingerprint,
         CancellationToken cancellationToken)
@@ -536,28 +656,29 @@ public sealed class FileProcessingOrchestrator
         if (orderData is not null)
         {
             _selectedOrders[path] = new SelectedOrderContext(orderData, fingerprint);
-            return orderData;
+            return new OrderResolution(orderData, Cancelled: false);
         }
 
         if (_selectedOrders.TryGetValue(path, out var cachedOrder) &&
             cachedOrder.Fingerprint.Equals(fingerprint))
         {
-            return cachedOrder.OrderData;
+            return new OrderResolution(cachedOrder.OrderData, Cancelled: false);
         }
 
         var orders = await _elmaClient.GetOrdersAsync(cancellationToken);
         if (orders.Count == 0)
         {
-            return null;
+            return new OrderResolution(null, Cancelled: false);
         }
 
         var selectedOrder = await _orderSelectionService.SelectOrderAsync(path, orders, cancellationToken);
         if (selectedOrder is not null)
         {
             _selectedOrders[path] = new SelectedOrderContext(selectedOrder, fingerprint);
+            return new OrderResolution(selectedOrder, Cancelled: false);
         }
 
-        return selectedOrder;
+        return new OrderResolution(null, Cancelled: true);
     }
 
     private async Task<OrderData?> SelectAnotherOrderAsync(string path, CancellationToken cancellationToken)
@@ -670,6 +791,26 @@ public sealed class FileProcessingOrchestrator
         }
     }
 
+    private static IReadOnlyCollection<TagItem> FilterSearchTags(IReadOnlyCollection<TagItem> tags)
+    {
+        return tags
+            .Where(static tag => !string.IsNullOrWhiteSpace(tag.Key) && !ShouldHideTag(tag.Key))
+            .ToList();
+    }
+
+    private static bool ShouldHideTag(string key)
+    {
+        return key.Trim().ToLowerInvariant() is
+            "composition" or
+            "object_type" or
+            "layout_type" or
+            "design_type" or
+            "mood" or
+            "purpose" or
+            "audience" or
+            "format";
+    }
+
     /// <summary>
     /// РџСЂРёРІРѕРґРёС‚ РІСЃРµ РёСЃС…РѕРґС‹ РѕР±СЂР°Р±РѕС‚РєРё Рє РµРґРёРЅРѕРјСѓ С„РѕСЂРјР°С‚Сѓ Р·Р°РїРёСЃРё РІ Р¶СѓСЂРЅР°Р».
     /// </summary>
@@ -724,4 +865,8 @@ public sealed class FileProcessingOrchestrator
     }
 
     private sealed record SelectedOrderContext(OrderData OrderData, FileProcessingFingerprint Fingerprint);
+
+    private sealed record OrderResolution(OrderData? OrderData, bool Cancelled);
+
+    private sealed record CorrectionResolution(FileCorrectionAction Action, string? CorrectedPath);
 }

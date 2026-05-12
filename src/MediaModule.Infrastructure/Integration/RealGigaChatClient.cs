@@ -168,28 +168,22 @@ public sealed class RealGigaChatClient : IGigaChatClient
             $"OrderId: {orderData?.OrderId ?? "не указан"}",
             $"Клиент: {orderData?.ClientName ?? "не указан"}",
             $"Тип продукта: {orderData?.ProductType ?? "не указан"}",
-            "Сначала опиши изображение как человек, который ищет макет глазами: что изображено, какие объекты и персонажи есть, какие видимые надписи, основные цвета, фон, композиция, стиль и назначение.",
-            "После описания сформируй не меньше 15 поисковых характеристик. Они должны помогать найти макет по визуальной памяти: «фиолетовая памятка с таблицей», «баннер с синей кнопкой», «постер с крупным заголовком».",
+            "Сначала опиши изображение как человек, который ищет макет глазами: что изображено, какие объекты и персонажи есть, какие видимые надписи, основные цвета, фон и стиль.",
+            "После описания сформируй поисковые характеристики. Они должны помогать найти макет по визуальной памяти: «фиолетовая памятка с таблицей», «баннер с синей кнопкой», «постер с крупным заголовком».",
             "Обязательные характеристики:",
             "1. visual_description - 1-2 предложения о том, что реально изображено.",
             "2. visible_text - все читаемые надписи через запятую; если текста нет, напиши «без текста».",
             "3. dominant_colors - 2-5 основных цветов простыми словами на русском.",
             "4. background - цвет/тип фона.",
-            "5. composition - расположение элементов: сетка, карточки, таблица, центр, две колонки, верхний заголовок и т.п.",
-            "6. object_type - тип макета: памятка, баннер, постер, логотип, карточка, презентация, инструкция и т.п.",
-            "7. product_type - продукт из заказа или визуально определенный тип.",
-            "8. style - визуальный стиль: минимализм, корпоративный, детский, ретро, информационный, яркий и т.п.",
-            "9. mood - настроение/тон: строгий, дружелюбный, праздничный, учебный, деловой и т.п.",
-            "10. purpose - для чего макет: реклама, инструкция, информирование, брендирование, объявление.",
-            "11. audience - кому предназначен макет, если можно понять.",
-            "12. format - ориентация и формат: вертикальный/горизонтальный, квадратный, лист, сторис и т.п.",
-            "13. client - клиент из заказа, если указан.",
-            "14. order_id - номер заказа, если указан.",
-            "15. search_keywords - 10-20 слов и фраз через запятую, включая синонимы и русские поисковые запросы.",
+            "5. product_type - продукт из заказа или визуально определенный тип.",
+            "6. style - визуальный стиль: минимализм, корпоративный, детский, ретро, информационный, яркий и т.п.",
+            "7. client - клиент из заказа, если указан.",
+            "8. order_id - номер заказа, если указан.",
+            "9. search_keywords - 10-20 слов и фраз через запятую, включая синонимы и русские поисковые запросы.",
             "Если поле уже указано во входных данных, обязательно продублируй его в tags: client, order_id, product_type, file_name, extension.",
             "Не используй значения unknown, generic, «неизвестно» и пустые значения. Если признак нельзя уверенно определить визуально, напиши полезное приближение вроде «информационный макет» или «светлый фон».",
             "Верни строго JSON без markdown и пояснений. Поле tags обязательно должно содержать массив объектов key/value, а не только description. Формат:",
-            "{\"description\":\"общее описание\",\"tags\":[{\"key\":\"visual_description\",\"value\":\"...\"},{\"key\":\"visible_text\",\"value\":\"...\"},{\"key\":\"dominant_colors\",\"value\":\"...\"},{\"key\":\"background\",\"value\":\"...\"},{\"key\":\"composition\",\"value\":\"...\"},{\"key\":\"object_type\",\"value\":\"...\"},{\"key\":\"product_type\",\"value\":\"...\"},{\"key\":\"style\",\"value\":\"...\"},{\"key\":\"mood\",\"value\":\"...\"},{\"key\":\"purpose\",\"value\":\"...\"},{\"key\":\"audience\",\"value\":\"...\"},{\"key\":\"format\",\"value\":\"...\"},{\"key\":\"client\",\"value\":\"...\"},{\"key\":\"order_id\",\"value\":\"...\"},{\"key\":\"search_keywords\",\"value\":\"...\"}]}");
+            "{\"description\":\"общее описание\",\"tags\":[{\"key\":\"visual_description\",\"value\":\"...\"},{\"key\":\"visible_text\",\"value\":\"...\"},{\"key\":\"dominant_colors\",\"value\":\"...\"},{\"key\":\"background\",\"value\":\"...\"},{\"key\":\"product_type\",\"value\":\"...\"},{\"key\":\"style\",\"value\":\"...\"},{\"key\":\"client\",\"value\":\"...\"},{\"key\":\"order_id\",\"value\":\"...\"},{\"key\":\"search_keywords\",\"value\":\"...\"}]}");
 
         var message = new Dictionary<string, object>
         {
@@ -366,6 +360,7 @@ public sealed class RealGigaChatClient : IGigaChatClient
     {
         var tags = source
             .Where(static tag => !string.IsNullOrWhiteSpace(tag.Key) && !string.IsNullOrWhiteSpace(tag.Value))
+            .Where(static tag => !ShouldHideTag(tag.Key))
             .ToList();
 
         AddIfMissing(tags, "file_name", Path.GetFileName(filePath));
@@ -381,7 +376,6 @@ public sealed class RealGigaChatClient : IGigaChatClient
             AddIfMissing(tags, "order_id", orderData.OrderId);
             AddIfMissing(tags, "client", orderData.ClientName);
             AddIfMissing(tags, "product_type", orderData.ProductType);
-            AddIfMissing(tags, "object_type", orderData.ProductType);
         }
 
         AddIfMissing(tags, "search_keywords", BuildSearchKeywords(filePath, orderData, description));
@@ -390,6 +384,19 @@ public sealed class RealGigaChatClient : IGigaChatClient
             .GroupBy(static tag => tag.Key, StringComparer.OrdinalIgnoreCase)
             .Select(static group => group.First())
             .ToList();
+    }
+
+    private static bool ShouldHideTag(string key)
+    {
+        return key.Trim().ToLowerInvariant() is
+            "composition" or
+            "object_type" or
+            "layout_type" or
+            "design_type" or
+            "mood" or
+            "purpose" or
+            "audience" or
+            "format";
     }
 
     private static void AddIfMissing(List<TagItem> tags, string key, string? value)

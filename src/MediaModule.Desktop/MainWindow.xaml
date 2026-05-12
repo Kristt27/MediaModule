@@ -32,7 +32,37 @@
         <Style TargetType="TextBlock"><Setter Property="Foreground" Value="{StaticResource Text}" /></Style>
         <Style x:Key="MutedText" TargetType="TextBlock"><Setter Property="Foreground" Value="{StaticResource Muted}" /><Setter Property="FontSize" Value="12" /></Style>
         <Style x:Key="CardStyle" TargetType="Border"><Setter Property="Background" Value="{StaticResource Card}" /><Setter Property="BorderBrush" Value="{StaticResource Line}" /><Setter Property="BorderThickness" Value="1" /><Setter Property="CornerRadius" Value="8" /></Style>
-        <Style x:Key="SidebarButtonStyle" TargetType="Button"><Setter Property="Background" Value="Transparent" /><Setter Property="BorderBrush" Value="Transparent" /><Setter Property="BorderThickness" Value="0" /><Setter Property="Foreground" Value="{StaticResource Text}" /><Setter Property="Padding" Value="10,8" /><Setter Property="Margin" Value="0,0,0,6" /><Setter Property="HorizontalContentAlignment" Value="Stretch" /></Style>
+        <Style x:Key="SidebarButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{StaticResource Muted}" />
+            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="Margin" Value="0,0,0,6" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="Transparent" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" RecognizesAccessKey="True" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource Text}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource Accent}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="#A3AAB8" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <Style x:Key="ActionButtonStyle" TargetType="Button">
             <Setter Property="Foreground" Value="White" />
             <Setter Property="Background" Value="{StaticResource Accent}" />
@@ -365,19 +395,19 @@
                 <TextBlock Grid.Row="1" Text="Главное меню" Style="{StaticResource MutedText}" Margin="0,0,0,10" />
                 <StackPanel Grid.Row="2">
                     <Button x:Name="DashboardNavButton" Style="{StaticResource SidebarButtonStyle}" Click="DashboardNavButton_Click">
-                        <DockPanel><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE80F;" Width="18" VerticalAlignment="Center" /><TextBlock Text="Дашборд" Margin="10,0,0,0" VerticalAlignment="Center" /></DockPanel>
+                        <DockPanel><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE80F;" Width="22" FontSize="18" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" /><TextBlock Text="Дашборд" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" /></DockPanel>
                     </Button>
                     <Button x:Name="ManualCheckNavButton" Style="{StaticResource SidebarButtonStyle}" Click="ManualCheckNavButton_Click">
-                        <DockPanel><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8A5;" Width="18" VerticalAlignment="Center" /><TextBlock Text="Проверка файлов" Margin="10,0,0,0" VerticalAlignment="Center" /></DockPanel>
+                        <DockPanel><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE7C3;" Width="22" FontSize="18" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" /><TextBlock Text="Проверка файлов" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" /></DockPanel>
                     </Button>
                     <Button x:Name="SettingsNavButton" Style="{StaticResource SidebarButtonStyle}" Click="SettingsNavButton_Click">
-                        <DockPanel><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE713;" Width="18" VerticalAlignment="Center" /><TextBlock Text="Настройки" Margin="10,0,0,0" VerticalAlignment="Center" /></DockPanel>
+                        <DockPanel><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE713;" Width="22" FontSize="18" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" /><TextBlock Text="Настройки" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" /></DockPanel>
                     </Button>
                     <Button x:Name="JournalNavButton" Style="{StaticResource SidebarButtonStyle}" Click="JournalNavButton_Click">
-                        <DockPanel><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE9D2;" Width="18" VerticalAlignment="Center" /><TextBlock Text="Журнал операций" Margin="10,0,0,0" VerticalAlignment="Center" /></DockPanel>
+                        <DockPanel><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8FD;" Width="22" FontSize="18" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" /><TextBlock Text="Журнал операций" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" /></DockPanel>
                     </Button>
                     <Button x:Name="PlaygroundNavButton" Style="{StaticResource SidebarButtonStyle}" Click="PlaygroundNavButton_Click">
-                        <DockPanel><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE721;" Width="18" VerticalAlignment="Center" /><TextBlock Text="GigaChat Playground" Margin="10,0,0,0" VerticalAlignment="Center" /></DockPanel>
+                        <DockPanel><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE721;" Width="22" FontSize="18" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" /><TextBlock Text="GigaChat Playground" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" /></DockPanel>
                     </Button>
                 </StackPanel>
             </Grid>
@@ -414,13 +444,13 @@
                         <TextBlock Text="Состояние" FontSize="21" FontWeight="SemiBold" Margin="0,0,0,12" />
                         <Grid x:Name="StatusCardsGrid">
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Style="{StaticResource CardStyle}" Background="{StaticResource GreenCard}" Margin="0,0,12,0" Padding="14">
+                            <Border x:Name="ProcessedSummaryCard" Grid.Column="0" Style="{StaticResource CardStyle}" Background="{StaticResource GreenCard}" Margin="0,0,12,0" Padding="14" Cursor="Hand" MouseLeftButtonUp="ProcessedSummaryCard_MouseLeftButtonUp">
                                 <Grid><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel><TextBlock Text="Обработанные файлы" FontSize="13" /><TextBlock Text="последние успешные сохранения" Style="{StaticResource MutedText}" /></StackPanel><StackPanel Grid.Column="1" Orientation="Horizontal"><TextBlock x:Name="ProcessedCountTextBlock" Text="0" Foreground="{StaticResource Green}" FontWeight="SemiBold" /><TextBlock Text=" файлов" Style="{StaticResource MutedText}" /></StackPanel></Grid><StackPanel Grid.Row="1" Margin="0,18,0,0"><DockPanel x:Name="ProcessedRow1Panel" Margin="0,0,0,10"><Border Width="18" Height="18" Background="{StaticResource Green}" CornerRadius="3" DockPanel.Dock="Left" /><TextBlock x:Name="ProcessedFile1TextBlock" Text="Пусто" FontSize="12" Margin="10,0,0,0" Style="{StaticResource CompactFileNameTextStyle}" /></DockPanel><DockPanel x:Name="ProcessedRow2Panel" Margin="0,0,0,10"><Border Width="18" Height="18" Background="{StaticResource Green}" CornerRadius="3" DockPanel.Dock="Left" /><TextBlock x:Name="ProcessedFile2TextBlock" Text="" FontSize="12" Margin="10,0,0,0" Style="{StaticResource CompactFileNameTextStyle}" /></DockPanel><DockPanel x:Name="ProcessedRow3Panel"><Border Width="18" Height="18" Background="{StaticResource Green}" CornerRadius="3" DockPanel.Dock="Left" /><TextBlock x:Name="ProcessedFile3TextBlock" Text="" FontSize="12" Margin="10,0,0,0" Style="{StaticResource CompactFileNameTextStyle}" /></DockPanel></StackPanel></Grid>
                             </Border>
-                            <Border Grid.Column="1" Style="{StaticResource CardStyle}" Background="{StaticResource RedCard}" Margin="0,0,12,0" Padding="14">
+                            <Border x:Name="IssuesSummaryCard" Grid.Column="1" Style="{StaticResource CardStyle}" Background="{StaticResource RedCard}" Margin="0,0,12,0" Padding="14" Cursor="Hand" MouseLeftButtonUp="IssuesSummaryCard_MouseLeftButtonUp">
                                 <Grid><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel><TextBlock Text="Найдены ошибки" FontSize="13" /><TextBlock Text="заблокированные или ошибочные файлы" Style="{StaticResource MutedText}" /></StackPanel><StackPanel Grid.Column="1" Orientation="Horizontal"><TextBlock x:Name="IssuesCountTextBlock" Text="0" Foreground="{StaticResource Red}" FontWeight="SemiBold" /><TextBlock Text=" ошибок" Style="{StaticResource MutedText}" /></StackPanel></Grid><StackPanel Grid.Row="1" Margin="0,18,0,0"><DockPanel x:Name="IssueRow1Panel" Margin="0,0,0,10"><Border Width="18" Height="18" Background="{StaticResource Red}" CornerRadius="3" DockPanel.Dock="Left" /><TextBlock x:Name="IssueFile1TextBlock" Text="Пусто" FontSize="12" Margin="10,0,0,0" Style="{StaticResource CompactFileNameTextStyle}" /></DockPanel><DockPanel x:Name="IssueRow2Panel" Margin="0,0,0,10"><Border Width="18" Height="18" Background="{StaticResource Red}" CornerRadius="3" DockPanel.Dock="Left" /><TextBlock x:Name="IssueFile2TextBlock" Text="" FontSize="12" Margin="10,0,0,0" Style="{StaticResource CompactFileNameTextStyle}" /></DockPanel><DockPanel x:Name="IssueRow3Panel"><Border Width="18" Height="18" Background="{StaticResource Red}" CornerRadius="3" DockPanel.Dock="Left" /><TextBlock x:Name="IssueFile3TextBlock" Text="" FontSize="12" Margin="10,0,0,0" Style="{StaticResource CompactFileNameTextStyle}" /></DockPanel></StackPanel></Grid>
                             </Border>
-                            <Border Grid.Column="2" Style="{StaticResource CardStyle}" Background="{StaticResource YellowCard}" Padding="14">
+                            <Border x:Name="DuplicatesSummaryCard" Grid.Column="2" Style="{StaticResource CardStyle}" Background="{StaticResource YellowCard}" Padding="14" Cursor="Hand" MouseLeftButtonUp="DuplicatesSummaryCard_MouseLeftButtonUp">
                                 <Grid><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel><TextBlock Text="Найдены дубликаты" FontSize="13" /><TextBlock Text="похожие файлы в журнале" Style="{StaticResource MutedText}" /></StackPanel><StackPanel Grid.Column="1" Orientation="Horizontal"><TextBlock x:Name="DuplicatesCountTextBlock" Text="0" Foreground="{StaticResource Yellow}" FontWeight="SemiBold" /><TextBlock Text=" дубликатов" Style="{StaticResource MutedText}" /></StackPanel></Grid><StackPanel Grid.Row="1" Margin="0,18,0,0"><DockPanel x:Name="DuplicateRow1Panel" Margin="0,0,0,10"><Border Width="18" Height="18" Background="{StaticResource Yellow}" CornerRadius="3" DockPanel.Dock="Left" /><TextBlock x:Name="DuplicateFile1TextBlock" Text="Пусто" FontSize="12" Margin="10,0,0,0" Style="{StaticResource CompactFileNameTextStyle}" /></DockPanel><DockPanel x:Name="DuplicateRow2Panel"><Border Width="18" Height="18" Background="{StaticResource Yellow}" CornerRadius="3" DockPanel.Dock="Left" /><TextBlock x:Name="DuplicateFile2TextBlock" Text="" FontSize="12" Margin="10,0,0,0" Style="{StaticResource CompactFileNameTextStyle}" /></DockPanel></StackPanel></Grid>
                             </Border>
                         </Grid>
@@ -430,7 +460,7 @@
                         <TextBlock Text="Статистика" FontSize="21" FontWeight="SemiBold" Margin="0,0,0,12" />
                         <Grid>
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,10,0" Padding="14">
+                            <Border x:Name="TotalOperationsMetricCard" Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,10,0" Padding="14" Cursor="Hand" MouseLeftButtonUp="TotalOperationsMetricCard_MouseLeftButtonUp">
                                 <Grid>
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="34" /></Grid.ColumnDefinitions>
                                     <StackPanel>
@@ -442,7 +472,7 @@
                                     </Border>
                                 </Grid>
                             </Border>
-                            <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="0,0,10,0" Padding="14">
+                            <Border x:Name="SuccessRateMetricCard" Grid.Column="1" Style="{StaticResource CardStyle}" Margin="0,0,10,0" Padding="14" Cursor="Hand" MouseLeftButtonUp="SuccessRateMetricCard_MouseLeftButtonUp">
                                 <Grid>
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="34" /></Grid.ColumnDefinitions>
                                     <StackPanel>
@@ -454,7 +484,7 @@
                                     </Border>
                                 </Grid>
                             </Border>
-                            <Border Grid.Column="2" Style="{StaticResource CardStyle}" Margin="0,0,10,0" Padding="14">
+                            <Border x:Name="TaggedFilesMetricCard" Grid.Column="2" Style="{StaticResource CardStyle}" Margin="0,0,10,0" Padding="14" Cursor="Hand" MouseLeftButtonUp="TaggedFilesMetricCard_MouseLeftButtonUp">
                                 <Grid>
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="34" /></Grid.ColumnDefinitions>
                                     <StackPanel>
@@ -466,7 +496,7 @@
                                     </Border>
                                 </Grid>
                             </Border>
-                            <Border Grid.Column="3" Style="{StaticResource CardStyle}" Margin="0,0,10,0" Padding="14">
+                            <Border x:Name="AverageTagsMetricCard" Grid.Column="3" Style="{StaticResource CardStyle}" Margin="0,0,10,0" Padding="14" Cursor="Hand" MouseLeftButtonUp="AverageTagsMetricCard_MouseLeftButtonUp">
                                 <Grid>
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="34" /></Grid.ColumnDefinitions>
                                     <StackPanel>
@@ -478,7 +508,7 @@
                                     </Border>
                                 </Grid>
                             </Border>
-                            <Border Grid.Column="4" Style="{StaticResource CardStyle}" Padding="14">
+                            <Border x:Name="LastOperationMetricCard" Grid.Column="4" Style="{StaticResource CardStyle}" Padding="14" Cursor="Hand" MouseLeftButtonUp="LastOperationMetricCard_MouseLeftButtonUp">
                                 <Grid>
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="34" /></Grid.ColumnDefinitions>
                                     <StackPanel>
@@ -495,7 +525,7 @@
                     </StackPanel>
                     <StackPanel Grid.Row="2" Margin="0,0,0,28">
                         <TextBlock Text="Журнал операций" FontSize="21" FontWeight="SemiBold" Margin="0,0,0,12" />
-                        <Border Style="{StaticResource CardStyle}" Padding="0" Height="210">
+                        <Border x:Name="DashboardJournalCard" Style="{StaticResource CardStyle}" Padding="0" Height="210" Cursor="Hand" MouseLeftButtonUp="DashboardJournalCard_MouseLeftButtonUp">
                             <DataGrid x:Name="LogsDataGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="None" SelectionChanged="LogsDataGrid_SelectionChanged" CellStyle="{StaticResource DashboardCellStyle}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                                 <DataGrid.Columns>
                                     <DataGridTemplateColumn Width="*">
@@ -667,22 +697,30 @@
                 <ScrollViewer x:Name="SettingsScreen" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
                     <StackPanel>
                         <TextBlock Text="Правила именования файлов" FontSize="21" FontWeight="SemiBold" Margin="0,0,0,12" />
-                        <Border Style="{StaticResource CardStyle}" Padding="16" Margin="0,0,0,28">
+                        <Border x:Name="FileNamePatternCard" Style="{StaticResource CardStyle}" Padding="16" Margin="0,0,0,28">
                             <StackPanel>
-                                <TextBlock Text="Шаблон имени файла (regex)" Style="{StaticResource MutedText}" Margin="0,0,0,10" />
-                                <Grid Margin="0,0,0,12"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="120" /></Grid.ColumnDefinitions><TextBox x:Name="RegexTextBox" Text="[ ClientName ]_[ ProductType ]_[ Year ]_[ Version ].png" TextChanged="SettingsField_Changed" /><Button Grid.Column="1" Content="Изменить" Style="{StaticResource GhostButtonStyle}" Margin="10,0,0,0" /></Grid>
-                                <TextBlock Text="(пример: ivanov_banner_2026_1.png)" Foreground="{StaticResource Green}" FontSize="12" />
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <TextBlock Text="Пример имени файла" Style="{StaticResource MutedText}" />
+                                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE946;" FontSize="13" Foreground="{StaticResource Muted}" Margin="6,0,0,0" ToolTip="Введите пример, как должно выглядеть имя файла. Ниже модуль покажет технический шаблон проверки." />
+                                </StackPanel>
+                                <TextBox x:Name="RegexTextBox" Text="петров_визитка_2026.png" TextChanged="FileNameExampleTextBox_TextChanged" Margin="0,0,0,10" />
+                                <TextBlock Text="Технический шаблон проверки" Style="{StaticResource MutedText}" Margin="0,0,0,4" />
+                                <TextBlock x:Name="RegexPreviewTextBlock" TextWrapping="Wrap" Foreground="{StaticResource Green}" FontSize="12" />
                             </StackPanel>
                         </Border>
                         <TextBlock Text="Структура хранения файлов" FontSize="21" FontWeight="SemiBold" Margin="0,0,0,12" />
-                        <Border Style="{StaticResource CardStyle}" Padding="16" Margin="0,0,0,28">
+                        <Border x:Name="RootDirectoryCard" Style="{StaticResource CardStyle}" Padding="16" Margin="0,0,0,28">
                             <StackPanel>
-                                <TextBlock Text="Корневая директория" Style="{StaticResource MutedText}" Margin="0,0,0,10" />
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <TextBlock Text="Корневая директория" Style="{StaticResource MutedText}" />
+                                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE946;" FontSize="13" Foreground="{StaticResource Muted}" Margin="6,0,0,0" ToolTip="Главная папка, от которой строится структура хранения: клиент, тип продукта, файл." />
+                                </StackPanel>
                                 <Grid Margin="0,0,0,12">
-                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="120" /><ColumnDefinition Width="120" /></Grid.ColumnDefinitions>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="120" /><ColumnDefinition Width="120" /><ColumnDefinition Width="120" /></Grid.ColumnDefinitions>
                                     <TextBox x:Name="RootDirectoryTextBox" Text="D:\Design\" IsReadOnly="True" />
                                     <Button x:Name="BrowseRootDirectoryButton" Grid.Column="1" Content="Изменить" Style="{StaticResource GhostButtonStyle}" Margin="10,0,0,0" Click="BrowseRootDirectoryButton_Click" />
                                     <Button x:Name="SaveRootDirectoryButton" Grid.Column="2" Content="Сохранить" Style="{StaticResource ActionButtonStyle}" Margin="10,0,0,0" Visibility="Collapsed" Click="SaveRootDirectoryButton_Click" />
+                                    <Button x:Name="CancelRootDirectoryButton" Grid.Column="3" Content="Отмена" Style="{StaticResource GhostButtonStyle}" Margin="10,0,0,0" Visibility="Collapsed" Click="CancelRootDirectoryButton_Click" />
                                 </Grid>
                                 <TextBlock Text="Структура каталогов: [Root]\[ClientName]\[ProductType]\" Foreground="{StaticResource Green}" FontSize="12" />
                             </StackPanel>
@@ -692,6 +730,10 @@
                             <Grid>
                                 <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
                                 <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                        <TextBlock Text="Что проверять" Style="{StaticResource MutedText}" />
+                                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE946;" FontSize="13" Foreground="{StaticResource Muted}" Margin="6,0,0,0" ToolTip="Выключенное правило не участвует в проверке новых и архивных файлов." />
+                                    </StackPanel>
                                     <CheckBox x:Name="ValidateFileNameRuleCheckBox" Content="Проверять имя файла" Style="{StaticResource RuleCheckBoxStyle}" Click="ValidateFileNameRuleCheckBox_Click" />
                                     <CheckBox x:Name="ValidatePathRuleCheckBox" Content="Проверять путь" Style="{StaticResource RuleCheckBoxStyle}" Click="ValidatePathRuleCheckBox_Click" />
                                     <CheckBox x:Name="DetectDuplicatesRuleCheckBox" Content="Проверять дубликаты" Style="{StaticResource RuleCheckBoxStyle}" Click="DetectDuplicatesRuleCheckBox_Click" />
@@ -723,8 +765,10 @@
                                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE721;" Foreground="{StaticResource Muted}" Margin="0,0,12,0" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" />
                                 </Grid>
                                 <ComboBox x:Name="JournalResultFilterComboBox" Grid.Column="1" Style="{StaticResource JournalComboBoxStyle}" Height="36" Margin="10,0,0,0" SelectedIndex="0" SelectionChanged="JournalFilter_Changed">
-                                    <ComboBoxItem Content="Все результаты" Tag="all" />
-                                    <ComboBoxItem Content="Успешно" Tag="Успешно" />
+                                     <ComboBoxItem Content="Все результаты" Tag="all" />
+                                    <ComboBoxItem Content="Обработанные" Tag="processed" />
+                                    <ComboBoxItem Content="Проблемные" Tag="issues" />
+                                     <ComboBoxItem Content="Успешно" Tag="Успешно" />
                                     <ComboBoxItem Content="Ошибки" Tag="Ошибка" />
                                     <ComboBoxItem Content="Заблокировано" Tag="Заблокировано" />
                                     <ComboBoxItem Content="Дубликаты" Tag="Дубликат найден" />
@@ -814,7 +858,10 @@
                                         <Button Grid.Column="3" Content="Выбрать файл" Style="{StaticResource GhostButtonStyle}" VerticalAlignment="Center" Click="ChooseGigaImageButton_Click" />
                                     </Grid>
                                 </Border>
-                                <TextBox Grid.Column="2" x:Name="GigaOrderIdTextBox" Text="1001" VerticalAlignment="Center" />
+                                <Grid Grid.Column="2" VerticalAlignment="Center">
+                                    <TextBox x:Name="GigaOrderIdTextBox" Text="" TextChanged="GigaOrderIdTextBox_TextChanged" />
+                                    <TextBlock x:Name="GigaOrderIdPlaceholder" Text="OrderId, например 1001" Foreground="{StaticResource Muted}" Opacity="0.62" Margin="12,0" VerticalAlignment="Center" IsHitTestVisible="False" />
+                                </Grid>
                                 <Button Grid.Column="4" Content="Сгенерировать" Style="{StaticResource ActionButtonStyle}" VerticalAlignment="Center" Click="GenerateTagsButton_Click" />
                             </Grid>
                         </Grid>
@@ -895,6 +942,27 @@
                         </StackPanel>
                     </ScrollViewer>
                     <Button x:Name="OpenOperationFolderButton" Grid.Row="2" Content="Открыть расположение" Style="{StaticResource GhostButtonStyle}" HorizontalAlignment="Right" Margin="18,0,18,18" Click="OpenOperationFolderButton_Click" />
+                </Grid>
+            </Border>
+        </Grid>
+        <Grid x:Name="MetricDetailsOverlay" Grid.ColumnSpan="2" Visibility="Collapsed" Background="#66000000" MouseDown="MetricDetailsOverlay_MouseDown">
+            <Border Width="460" Background="White" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="8" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center" MouseDown="MetricDetailsDialog_MouseDown">
+                <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                    <Border Background="#FFF4EF" Padding="18,16">
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <Border Width="34" Height="34" Background="{StaticResource Accent}" CornerRadius="7" Margin="0,0,12,0">
+                                <TextBlock x:Name="MetricDetailsIconTextBlock" FontFamily="Segoe MDL2 Assets" Text="&#xE9D2;" Foreground="White" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock x:Name="MetricDetailsTitleTextBlock" Text="Сведения" FontSize="20" FontWeight="SemiBold" />
+                                <TextBlock x:Name="MetricDetailsSubtitleTextBlock" Text="статистика журнала" Style="{StaticResource MutedText}" Margin="0,2,0,0" />
+                            </StackPanel>
+                            <Button Grid.Column="2" Content="×" Width="30" Height="30" Background="Transparent" BorderThickness="0" Foreground="{StaticResource Muted}" FontSize="22" Click="CloseMetricDetailsButton_Click" />
+                        </Grid>
+                    </Border>
+                    <TextBlock x:Name="MetricDetailsBodyTextBlock" Grid.Row="1" Margin="18" TextWrapping="Wrap" LineHeight="20" />
                 </Grid>
             </Border>
         </Grid>

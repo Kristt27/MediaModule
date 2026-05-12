@@ -94,9 +94,6 @@ public sealed class GigachatPlaygroundService
         var colors = imageSummary?.DominantColors.Count > 0
             ? string.Join(", ", imageSummary.DominantColors)
             : "цвета определит GigaChat";
-        var format = imageSummary is null
-            ? "формат определит GigaChat"
-            : $"{imageSummary.Orientation}, {imageSummary.Width}x{imageSummary.Height}";
         var description = imageSummary is null
             ? $"Графический макет типа {objectType}; точное описание объектов, текста и цветов сформирует GigaChat по изображению."
             : $"Графический макет типа {objectType}, {imageSummary.Orientation}; основные цвета: {colors}.";
@@ -105,10 +102,7 @@ public sealed class GigachatPlaygroundService
         tags.Add(new TagRow { Key = "visible_text", Value = "читаемые надписи определит GigaChat по изображению" });
         tags.Add(new TagRow { Key = "dominant_colors", Value = colors });
         tags.Add(new TagRow { Key = "background", Value = imageSummary?.Background ?? "фон определит GigaChat" });
-        tags.Add(new TagRow { Key = "composition", Value = InferComposition(objectType) });
-        tags.Add(new TagRow { Key = "object_type", Value = objectType });
         tags.Add(new TagRow { Key = "product_type", Value = objectType });
-        tags.Add(new TagRow { Key = "purpose", Value = InferPurpose(objectType) });
 
         tags.Add(new TagRow
         {
@@ -117,10 +111,7 @@ public sealed class GigachatPlaygroundService
                 ? "minimalism"
                 : "визуальный макет",
         });
-        tags.Add(new TagRow { Key = "mood", Value = InferMood(objectType) });
-        tags.Add(new TagRow { Key = "audience", Value = InferAudience(objectType) });
-        tags.Add(new TagRow { Key = "format", Value = format });
-        tags.Add(new TagRow { Key = "search_keywords", Value = $"{objectType}, макет, дизайн, {colors}, {format}, визуальный поиск" });
+        tags.Add(new TagRow { Key = "search_keywords", Value = $"{objectType}, макет, дизайн, {colors}, визуальный поиск" });
 
         if (!string.IsNullOrWhiteSpace(orderId))
         {
@@ -177,27 +168,21 @@ public sealed class GigachatPlaygroundService
             $"OrderId: {order?.OrderId ?? "не указан"}",
             $"Клиент: {order?.ClientName ?? "не указан"}",
             $"Тип продукта: {order?.ProductType ?? "не указан"}",
-            "Сначала опиши изображение как человек, который ищет макет глазами: что изображено, какие объекты и персонажи есть, какие видимые надписи, основные цвета, фон, композиция, стиль и назначение.",
+            "Сначала опиши изображение как человек, который ищет макет глазами: что изображено, какие объекты и персонажи есть, какие видимые надписи, основные цвета, фон и стиль.",
             "После описания сформируй поисковые характеристики. Они должны помогать найти макет по визуальной памяти: «фиолетовая памятка с таблицей», «баннер с синей кнопкой», «постер с крупным заголовком».",
             "Обязательные характеристики:",
             "1. visual_description - 1-2 предложения о том, что реально изображено.",
             "2. visible_text - все читаемые надписи через запятую; если текста нет, напиши «без текста».",
             "3. dominant_colors - 2-5 основных цветов простыми словами на русском.",
             "4. background - цвет/тип фона.",
-            "5. composition - расположение элементов: сетка, карточки, таблица, центр, две колонки, верхний заголовок и т.п.",
-            "6. object_type - тип макета: памятка, баннер, постер, логотип, карточка, презентация, инструкция и т.п.",
-            "7. product_type - продукт из заказа или визуально определенный тип.",
-            "8. style - визуальный стиль: минимализм, корпоративный, детский, ретро, информационный, яркий и т.п.",
-            "9. mood - настроение/тон: строгий, дружелюбный, праздничный, учебный, деловой и т.п.",
-            "10. purpose - для чего макет: реклама, инструкция, информирование, брендирование, объявление.",
-            "11. audience - кому предназначен макет, если можно понять.",
-            "12. format - ориентация и формат: вертикальный/горизонтальный, квадратный, лист, сторис и т.п.",
-            "13. client - клиент из заказа, если указан.",
-            "14. order_id - номер заказа, если указан.",
-            "15. search_keywords - 10-20 слов и фраз через запятую, включая синонимы и русские поисковые запросы.",
+            "5. product_type - продукт из заказа или визуально определенный тип.",
+            "6. style - визуальный стиль: минимализм, корпоративный, детский, ретро, информационный, яркий и т.п.",
+            "7. client - клиент из заказа, если указан.",
+            "8. order_id - номер заказа, если указан.",
+            "9. search_keywords - 10-20 слов и фраз через запятую, включая синонимы и русские поисковые запросы.",
             "Не используй значения unknown, generic, «неизвестно» и пустые значения. Если признак нельзя уверенно определить визуально, напиши полезное приближение вроде «информационный макет» или «светлый фон».",
             "Верни строго JSON без markdown и пояснений в формате:",
-            "{\"description\":\"общее описание\",\"tags\":[{\"key\":\"visual_description\",\"value\":\"...\"},{\"key\":\"visible_text\",\"value\":\"...\"},{\"key\":\"dominant_colors\",\"value\":\"...\"},{\"key\":\"background\",\"value\":\"...\"},{\"key\":\"composition\",\"value\":\"...\"},{\"key\":\"object_type\",\"value\":\"...\"},{\"key\":\"product_type\",\"value\":\"...\"},{\"key\":\"style\",\"value\":\"...\"},{\"key\":\"mood\",\"value\":\"...\"},{\"key\":\"purpose\",\"value\":\"...\"},{\"key\":\"audience\",\"value\":\"...\"},{\"key\":\"format\",\"value\":\"...\"},{\"key\":\"client\",\"value\":\"...\"},{\"key\":\"order_id\",\"value\":\"...\"},{\"key\":\"search_keywords\",\"value\":\"...\"}]}");
+            "{\"description\":\"общее описание\",\"tags\":[{\"key\":\"visual_description\",\"value\":\"...\"},{\"key\":\"visible_text\",\"value\":\"...\"},{\"key\":\"dominant_colors\",\"value\":\"...\"},{\"key\":\"background\",\"value\":\"...\"},{\"key\":\"product_type\",\"value\":\"...\"},{\"key\":\"style\",\"value\":\"...\"},{\"key\":\"client\",\"value\":\"...\"},{\"key\":\"order_id\",\"value\":\"...\"},{\"key\":\"search_keywords\",\"value\":\"...\"}]}");
     }
 
     private static VisualImageSummary? ReadImageSummary(string filePath)
@@ -348,54 +333,6 @@ public sealed class GigachatPlaygroundService
         }
 
         return "design layout";
-    }
-
-    private static string InferPurpose(string objectType)
-    {
-        return objectType switch
-        {
-            "banner" => "advertising",
-            "poster" => "announcement",
-            "logo" => "branding",
-            "instruction" => "information",
-            _ => "design search",
-        };
-    }
-
-    private static string InferComposition(string objectType)
-    {
-        return objectType switch
-        {
-            "banner" => "широкая рекламная композиция",
-            "poster" => "вертикальная афишная композиция с акцентом на заголовок",
-            "logo" => "центральный знак или брендовый элемент",
-            "instruction" => "информационная структура с блоками, текстом или таблицей",
-            _ => "композицию точнее определит GigaChat",
-        };
-    }
-
-    private static string InferMood(string objectType)
-    {
-        return objectType switch
-        {
-            "instruction" => "учебный, информационный",
-            "logo" => "брендовый",
-            "poster" => "анонсирующий",
-            "banner" => "рекламный",
-            _ => "визуальный",
-        };
-    }
-
-    private static string InferAudience(string objectType)
-    {
-        return objectType switch
-        {
-            "instruction" => "читатели инструкции или памятки",
-            "logo" => "клиенты бренда",
-            "poster" => "посетители мероприятия",
-            "banner" => "потенциальные покупатели",
-            _ => "пользователи макета",
-        };
     }
 
     private static string BuildPreviewFilePath(string fileName, string rootDirectory, PlaygroundOrder? order)

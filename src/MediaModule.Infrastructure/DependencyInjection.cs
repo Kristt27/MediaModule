@@ -16,7 +16,7 @@ public static class DependencyInjection
     {
         services.AddSingleton<IFileEventSource, FileSystemWatcherEventSource>();
         services.AddSingleton<IFileRuleValidator, RegexFileRuleValidator>();
-        services.AddSingleton<IElmaClient, MockElmaClient>();
+        services.AddSingleton<IElmaClient, RealElmaClient>();
         services.AddSingleton<IGigaChatClient, RealGigaChatClient>();
         services.AddSingleton<IDuplicateDetector, AverageHashDuplicateDetector>();
         services.AddSingleton<IDuplicateResolutionService, WindowsDuplicateResolutionService>();

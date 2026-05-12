@@ -23,7 +23,7 @@ public sealed class MediaModuleBehaviorTests
             RootDirectory = root,
             ValidateFileName = true,
             ValidatePath = true,
-            FileNameRegexPattern = "^[A-Za-z]+_[A-Za-z]+_20\\d{2}_\\d+\\.[A-Za-z0-9]+$",
+            FileNameRegexPattern = "^[A-Za-z]+_[A-Za-z]+_20\\d{2}(?:_\\d+)?\\.[A-Za-z0-9]+$",
         });
         var validator = new RegexFileRuleValidator(options);
         var order = new OrderData("1001", "Ivanov", "banner");
@@ -34,7 +34,28 @@ public sealed class MediaModuleBehaviorTests
         Assert.False(result.IsNameValid);
         Assert.False(result.IsPathValid);
         Assert.Contains(Path.Combine(root, "Ivanov", "banner"), result.RecommendedDirectory);
-        Assert.Equal("Ivanov_banner_2026_1.png", result.RecommendedFileName);
+        Assert.Equal("Ivanov_banner_2026.png", result.RecommendedFileName);
+    }
+
+    [Fact]
+    public void Validator_accepts_first_file_without_version_and_followup_versions()
+    {
+        var root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        var options = new TestOptionsMonitor<ModuleOptions>(new ModuleOptions
+        {
+            RootDirectory = root,
+            ValidateFileName = true,
+            ValidatePath = false,
+            FileNameRegexPattern = "^[\\p{L}0-9]+_[\\p{L}0-9]+_20\\d{2}(?:_\\d+)?\\.[A-Za-z0-9]+$",
+        });
+        var validator = new RegexFileRuleValidator(options);
+        var order = new OrderData("1001", "Петров", "визитка");
+
+        var first = validator.Validate(Path.Combine(root, "Петров_визитка_2026.png"), order);
+        var second = validator.Validate(Path.Combine(root, "Петров_визитка_2026_1.png"), order);
+
+        Assert.True(first.IsNameValid);
+        Assert.True(second.IsNameValid);
     }
 
     [Fact]
@@ -218,6 +239,120 @@ public sealed class MediaModuleBehaviorTests
 
             var rows = await ReadProcessingLogRowsAsync(options.CurrentValue.DatabasePath);
             Assert.Equal(2, rows.Count(row => row.FilePath == filePath));
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task Orchestrator_stops_when_order_selection_is_cancelled_and_can_retry_same_file()
+    {
+        var root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+
+        try
+        {
+            var options = new TestOptionsMonitor<ModuleOptions>(new ModuleOptions
+            {
+                DatabasePath = Path.Combine(root, "module.db"),
+                DetectDuplicates = true,
+                AutoAcceptTags = true,
+                AllowedExtensions = [".png"],
+            });
+            var repository = new SqliteModuleRepository(Options.Create(options.CurrentValue));
+            await repository.InitializeAsync(CancellationToken.None);
+            var notifications = new RecordingNotificationService();
+            var order = new OrderData("1001", "Ivanov", "banner");
+
+            var orchestrator = new FileProcessingOrchestrator(
+                new AlwaysValidRuleValidator(),
+                new OrdersOnlyElmaClient(order),
+                new EmptyGigaChatClient(),
+                new FixedDuplicateDetector("0000000000000000"),
+                new FixedDuplicateResolutionService(DuplicateResolutionAction.SaveAsNew),
+                new QueuedOrderSelectionService(null, order),
+                new NoopFileCorrectionService(),
+                new AcceptingTagReviewService(),
+                repository,
+                notifications,
+                new InMemoryViolationPolicy(),
+                options,
+                NullLogger<FileProcessingOrchestrator>.Instance);
+
+            var filePath = Path.Combine(root, "abracadabra.png");
+            await File.WriteAllTextAsync(filePath, "image", CancellationToken.None);
+
+            await orchestrator.ProcessAsync(
+                new FileDetectedEvent(filePath, WatcherChangeTypes.Created, DateTime.UtcNow),
+                CancellationToken.None);
+
+            await orchestrator.ProcessAsync(
+                new FileDetectedEvent(filePath, WatcherChangeTypes.Created, DateTime.UtcNow),
+                CancellationToken.None);
+
+            var rows = await ReadProcessingLogRowsAsync(options.CurrentValue.DatabasePath);
+            var row = Assert.Single(rows);
+            Assert.Equal((int)ProcessingResult.Success, row.Result);
+            Assert.Contains(notifications.Notifications, notification => notification.Title == "MediaModule: проверка отменена");
+            Assert.Contains(notifications.Notifications, notification => notification.Title == "MediaModule: подождите");
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task Orchestrator_cancels_correction_without_writing_log_and_restores_file()
+    {
+        var root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+
+        try
+        {
+            var rejectedDirectory = Path.Combine(root, "rejected");
+            var options = new TestOptionsMonitor<ModuleOptions>(new ModuleOptions
+            {
+                DatabasePath = Path.Combine(root, "module.db"),
+                RejectedFilesDirectory = rejectedDirectory,
+                DetectDuplicates = true,
+                AutoAcceptTags = true,
+                AllowedExtensions = [".png"],
+            });
+            var repository = new SqliteModuleRepository(Options.Create(options.CurrentValue));
+            await repository.InitializeAsync(CancellationToken.None);
+            var notifications = new RecordingNotificationService();
+
+            var orchestrator = new FileProcessingOrchestrator(
+                new FixedViolationRuleValidator(root),
+                new FixedElmaClient(new OrderData("1001", "Ivanov", "banner")),
+                new EmptyGigaChatClient(),
+                new FixedDuplicateDetector("0000000000000000"),
+                new FixedDuplicateResolutionService(DuplicateResolutionAction.SaveAsNew),
+                new FirstOrderSelectionService(),
+                new FixedFileCorrectionService(FileCorrectionAction.CancelProcessing),
+                new AcceptingTagReviewService(),
+                repository,
+                notifications,
+                new InMemoryViolationPolicy(),
+                options,
+                NullLogger<FileProcessingOrchestrator>.Instance);
+
+            var filePath = Path.Combine(root, "abracadabra.png");
+            await File.WriteAllTextAsync(filePath, "image", CancellationToken.None);
+
+            await orchestrator.ProcessAsync(
+                new FileDetectedEvent(filePath, WatcherChangeTypes.Created, DateTime.UtcNow),
+                CancellationToken.None);
+
+            var rows = await ReadProcessingLogRowsAsync(options.CurrentValue.DatabasePath);
+            Assert.Empty(rows);
+            Assert.True(File.Exists(filePath));
+            Assert.Contains(notifications.Notifications, notification => notification.Title == "MediaModule: проверка отменена");
         }
         finally
         {
@@ -538,6 +673,24 @@ ORDER BY id;
         public FileValidationResult Validate(string filePath, OrderData? orderData) => FileValidationResult.Success();
     }
 
+    private sealed class FixedViolationRuleValidator : IFileRuleValidator
+    {
+        private readonly string _root;
+
+        public FixedViolationRuleValidator(string root)
+        {
+            _root = root;
+        }
+
+        public FileValidationResult Validate(string filePath, OrderData? orderData) =>
+            FileValidationResult.Failed(
+                isNameValid: false,
+                isPathValid: false,
+                recommendedDirectory: Path.Combine(_root, orderData?.ClientName ?? "Unknown", orderData?.ProductType ?? "unknown"),
+                recommendedFileName: $"{orderData?.ClientName ?? "Unknown"}_{orderData?.ProductType ?? "unknown"}_2026_1{Path.GetExtension(filePath)}",
+                "Некорректное имя или папка.");
+    }
+
     private sealed class FixedElmaClient : IElmaClient
     {
         private readonly OrderData? _orderData;
@@ -573,6 +726,22 @@ ORDER BY id;
             Task.FromResult(_hash);
     }
 
+    private sealed class OrdersOnlyElmaClient : IElmaClient
+    {
+        private readonly IReadOnlyCollection<OrderData> _orders;
+
+        public OrdersOnlyElmaClient(params OrderData[] orders)
+        {
+            _orders = orders;
+        }
+
+        public Task<OrderData?> TryResolveOrderAsync(string filePath, CancellationToken cancellationToken) =>
+            Task.FromResult<OrderData?>(null);
+
+        public Task<IReadOnlyCollection<OrderData>> GetOrdersAsync(CancellationToken cancellationToken) =>
+            Task.FromResult(_orders);
+    }
+
     private sealed class FixedDuplicateResolutionService : IDuplicateResolutionService
     {
         private readonly DuplicateResolutionAction _action;
@@ -599,6 +768,22 @@ ORDER BY id;
             Task.FromResult(orders.FirstOrDefault());
     }
 
+    private sealed class QueuedOrderSelectionService : IOrderSelectionService
+    {
+        private readonly Queue<OrderData?> _orders;
+
+        public QueuedOrderSelectionService(params OrderData?[] orders)
+        {
+            _orders = new Queue<OrderData?>(orders);
+        }
+
+        public Task<OrderData?> SelectOrderAsync(
+            string filePath,
+            IReadOnlyCollection<OrderData> orders,
+            CancellationToken cancellationToken) =>
+            Task.FromResult(_orders.Count == 0 ? orders.FirstOrDefault() : _orders.Dequeue());
+    }
+
     private sealed class NoopFileCorrectionService : IFileCorrectionService
     {
         public Task<FileCorrectionAction> RequestCorrectionAsync(
@@ -608,6 +793,24 @@ ORDER BY id;
             string reason,
             CancellationToken cancellationToken) =>
             Task.FromResult(FileCorrectionAction.None);
+    }
+
+    private sealed class FixedFileCorrectionService : IFileCorrectionService
+    {
+        private readonly FileCorrectionAction _action;
+
+        public FixedFileCorrectionService(FileCorrectionAction action)
+        {
+            _action = action;
+        }
+
+        public Task<FileCorrectionAction> RequestCorrectionAsync(
+            string rejectedFilePath,
+            string recommendedDirectory,
+            string recommendedFileName,
+            string reason,
+            CancellationToken cancellationToken) =>
+            Task.FromResult(_action);
     }
 
     private sealed class AcceptingTagReviewService : ITagReviewService

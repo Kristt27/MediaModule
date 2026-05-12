@@ -22,16 +22,18 @@ public sealed class ManualFileProcessingService
     private readonly IOrderSelectionService _orderSelectionService;
     private readonly IFileCorrectionService _fileCorrectionService;
     private readonly FileProcessingOrchestrator _orchestrator;
+    private readonly IProgress<ManualProcessingNotification> _notifications;
 
     public ManualFileProcessingService(
         WorkerSettingsService settingsService,
         IProgress<ManualProcessingNotification> notifications)
     {
+        _notifications = notifications;
         _options = settingsService.LoadModuleOptions();
         var monitor = new StaticOptionsMonitor<ModuleOptions>(_options);
         var options = Options.Create(_options);
         _repository = new SqliteModuleRepository(options);
-        _elmaClient = new ManualOrderContextElmaClient(new MockElmaClient(options));
+        _elmaClient = new ManualOrderContextElmaClient(new RealElmaClient(options, NullLogger<RealElmaClient>.Instance));
         _ruleValidator = new RegexFileRuleValidator(monitor);
         _orderSelectionService = new WindowsOrderSelectionService();
         _fileCorrectionService = new WindowsFileCorrectionService();
@@ -64,24 +66,67 @@ public sealed class ManualFileProcessingService
     public async Task ProcessAsync(string filePath, CancellationToken cancellationToken)
     {
         var currentPath = filePath;
-        var orderData = await ResolveOrderAsync(currentPath, cancellationToken);
+        var orderResolution = await ResolveOrderAsync(currentPath, cancellationToken);
+        if (orderResolution.Cancelled)
+        {
+            _notifications.Report(new ManualProcessingNotification(
+                "MediaModule: проверка отменена",
+                $"Файл не обрабатывался: {Path.GetFileName(currentPath)}"));
+            return;
+        }
+
+        var orderData = orderResolution.OrderData;
         if (orderData is not null)
         {
             _elmaClient.Remember(currentPath, orderData);
         }
 
         var validation = _ruleValidator.Validate(currentPath, orderData);
-        if (validation.HasViolations)
+        while (validation.HasViolations)
         {
-            var correctedPath = await TryOfferCorrectionAsync(currentPath, validation, cancellationToken);
-            if (!string.IsNullOrWhiteSpace(correctedPath))
+            var correction = await TryOfferCorrectionAsync(currentPath, validation, cancellationToken);
+            if (correction.Action == FileCorrectionAction.AcceptAndMove &&
+                !string.IsNullOrWhiteSpace(correction.CorrectedPath))
             {
-                currentPath = correctedPath;
+                currentPath = correction.CorrectedPath;
                 if (orderData is not null)
                 {
                     _elmaClient.Remember(currentPath, orderData);
                 }
+
+                break;
             }
+
+            if (correction.Action == FileCorrectionAction.BackToOrderSelection)
+            {
+                orderResolution = await ResolveOrderAsync(currentPath, cancellationToken, forceSelection: true);
+                if (orderResolution.Cancelled)
+                {
+                    _notifications.Report(new ManualProcessingNotification(
+                        "MediaModule: проверка отменена",
+                        $"Файл не обрабатывался: {Path.GetFileName(currentPath)}"));
+                    return;
+                }
+
+                orderData = orderResolution.OrderData;
+                if (orderData is not null)
+                {
+                    _elmaClient.Remember(currentPath, orderData);
+                }
+
+                validation = _ruleValidator.Validate(currentPath, orderData);
+                continue;
+            }
+
+            if (correction.Action == FileCorrectionAction.CancelProcessing)
+            {
+                _notifications.Report(new ManualProcessingNotification(
+                    "MediaModule: проверка отменена",
+                    $"Файл не обрабатывался: {Path.GetFileName(currentPath)}"));
+                return;
+            }
+
+            break;
         }
 
         await _orchestrator.ProcessAsync(
@@ -89,19 +134,33 @@ public sealed class ManualFileProcessingService
             cancellationToken);
     }
 
-    private async Task<OrderData?> ResolveOrderAsync(string filePath, CancellationToken cancellationToken)
+    private async Task<OrderResolution> ResolveOrderAsync(
+        string filePath,
+        CancellationToken cancellationToken,
+        bool forceSelection = false)
     {
-        var orderData = await _elmaClient.TryResolveOrderAsync(filePath, cancellationToken);
-        if (orderData is not null)
+        if (!forceSelection)
         {
-            return orderData;
+            var orderData = await _elmaClient.TryResolveOrderAsync(filePath, cancellationToken);
+            if (orderData is not null)
+            {
+                return new OrderResolution(orderData, Cancelled: false);
+            }
         }
 
         var orders = await _elmaClient.GetOrdersAsync(cancellationToken);
-        return await _orderSelectionService.SelectOrderAsync(filePath, orders, cancellationToken);
+        if (orders.Count == 0)
+        {
+            return new OrderResolution(null, Cancelled: false);
+        }
+
+        var selectedOrder = await _orderSelectionService.SelectOrderAsync(filePath, orders, cancellationToken);
+        return selectedOrder is null
+            ? new OrderResolution(null, Cancelled: true)
+            : new OrderResolution(selectedOrder, Cancelled: false);
     }
 
-    private async Task<string?> TryOfferCorrectionAsync(
+    private async Task<CorrectionResolution> TryOfferCorrectionAsync(
         string filePath,
         FileValidationResult validation,
         CancellationToken cancellationToken)
@@ -110,7 +169,7 @@ public sealed class ManualFileProcessingService
             string.IsNullOrWhiteSpace(validation.RecommendedFileName) ||
             !File.Exists(filePath))
         {
-            return null;
+            return new CorrectionResolution(FileCorrectionAction.None, null);
         }
 
         var reason = string.Join("; ", validation.FailureReasons);
@@ -123,7 +182,7 @@ public sealed class ManualFileProcessingService
 
         if (action != FileCorrectionAction.AcceptAndMove)
         {
-            return null;
+            return new CorrectionResolution(action, null);
         }
 
         Directory.CreateDirectory(validation.RecommendedDirectory);
@@ -133,11 +192,11 @@ public sealed class ManualFileProcessingService
 
         if (PathsEqual(filePath, targetPath))
         {
-            return filePath;
+            return new CorrectionResolution(action, filePath);
         }
 
         File.Move(filePath, targetPath);
-        return targetPath;
+        return new CorrectionResolution(action, targetPath);
     }
 
     private static string BuildAvailableTargetPath(string directory, string fileName)
@@ -150,12 +209,22 @@ public sealed class ManualFileProcessingService
 
         var name = Path.GetFileNameWithoutExtension(fileName);
         var extension = Path.GetExtension(fileName);
+        var baseName = name;
         var index = 1;
-        var candidate = Path.Combine(directory, $"{name}({index}){extension}");
+        var separatorIndex = name.LastIndexOf('_');
+        if (separatorIndex > 0 &&
+            separatorIndex < name.Length - 1 &&
+            int.TryParse(name[(separatorIndex + 1)..], out var parsedVersion))
+        {
+            baseName = name[..separatorIndex];
+            index = parsedVersion + 1;
+        }
+
+        var candidate = Path.Combine(directory, $"{baseName}_{index}{extension}");
         while (File.Exists(candidate))
         {
             index++;
-            candidate = Path.Combine(directory, $"{name}({index}){extension}");
+            candidate = Path.Combine(directory, $"{baseName}_{index}{extension}");
         }
 
         return candidate;
@@ -272,6 +341,10 @@ public sealed class ManualFileProcessingService
 
         public IDisposable? OnChange(Action<T, string?> listener) => null;
     }
+
+    private sealed record OrderResolution(OrderData? OrderData, bool Cancelled);
+
+    private sealed record CorrectionResolution(FileCorrectionAction Action, string? CorrectedPath);
 }
 
 public sealed record ManualProcessingNotification(string Title, string Message);

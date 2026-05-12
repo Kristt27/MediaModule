@@ -121,8 +121,8 @@ public sealed class RegexFileRuleValidator : IFileRuleValidator
         }
 
         return orderData is null
-            ? $"Client_Product_{DateTime.Now:yyyy}_1{extension}"
-            : $"{Sanitize(orderData.ClientName)}_{Sanitize(orderData.ProductType)}_{DateTime.Now:yyyy}_1{extension}";
+            ? $"Client_Product_{DateTime.Now:yyyy}{extension}"
+            : $"{Sanitize(orderData.ClientName)}_{Sanitize(orderData.ProductType)}_{DateTime.Now:yyyy}{extension}";
     }
 
     private static string Sanitize(string value)

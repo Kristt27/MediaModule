@@ -56,10 +56,15 @@ public partial class MainWindow : Window
     private bool _detectDuplicates = true;
     private bool _settingsDirty;
     private bool _loadingSettings;
+    private string _fileNameRegexPattern = string.Empty;
+    private string _savedRootDirectory = string.Empty;
+    private string? _rootDirectoryBeforeBrowse;
     private ProcessingLogRow? _detailsRow;
     private ProcessingLogRow? _selectedSearchResult;
+    private int? _selectedSearchResultId;
     private string _gigaSelectedImagePath = string.Empty;
     private bool _refreshingLogs;
+    private bool _refreshingSearchResults;
     private string _currentSearchFilter = string.Empty;
     private bool _manualProcessing;
     private CancellationTokenSource? _manualProcessingCts;
@@ -89,6 +94,7 @@ public partial class MainWindow : Window
         UpdateRoleUi();
         UpdateSearchPlaceholder();
         UpdateJournalFilterPlaceholder();
+        UpdateGigaOrderPlaceholder();
         UpdateManualCheckUi();
     }
 
@@ -112,8 +118,12 @@ public partial class MainWindow : Window
 
             var snapshot = _settingsService.Load();
 
+            _savedRootDirectory = snapshot.RootDirectory;
+            _fileNameRegexPattern = string.IsNullOrWhiteSpace(snapshot.FileNameRegexPattern)
+                ? BuildRegexFromFileNameExample("петров_визитка_2026.png")
+                : snapshot.FileNameRegexPattern;
             RootDirectoryTextBox.Text = snapshot.RootDirectory;
-            RegexTextBox.Text = snapshot.FileNameRegexPattern;
+            RegexTextBox.Text = BuildExampleFromRegex(_fileNameRegexPattern);
             _validateFileName = snapshot.ValidateFileName;
             _validatePath = snapshot.ValidatePath;
             _detectDuplicates = snapshot.DetectDuplicates;
@@ -122,7 +132,9 @@ public partial class MainWindow : Window
             AutoAcceptTagsCheckBox.IsChecked = snapshot.AutoAcceptTags;
             OrdersTextBox.Text = snapshot.OrdersMultiline;
             SaveRootDirectoryButton.Visibility = Visibility.Collapsed;
+            CancelRootDirectoryButton.Visibility = Visibility.Collapsed;
             UpdateRuleButtons();
+            UpdateRegexPreview();
             _settingsDirty = false;
 
             DatabasePathTextBlock.Text = $"SQLite DB: {snapshot.ResolvedDatabasePath}";
@@ -246,7 +258,9 @@ public partial class MainWindow : Window
         return new WorkerSettingsSnapshot
         {
             RootDirectory = RootDirectoryTextBox.Text.Trim(),
-            FileNameRegexPattern = RegexTextBox.Text.Trim(),
+            FileNameRegexPattern = string.IsNullOrWhiteSpace(_fileNameRegexPattern)
+                ? BuildRegexFromFileNameExample(RegexTextBox.Text.Trim())
+                : _fileNameRegexPattern,
             ValidateFileName = _validateFileName,
             ValidatePath = _validatePath,
             DetectDuplicates = _detectDuplicates,
@@ -262,6 +276,106 @@ public partial class MainWindow : Window
         ValidateFileNameRuleCheckBox.IsChecked = _validateFileName;
         ValidatePathRuleCheckBox.IsChecked = _validatePath;
         DetectDuplicatesRuleCheckBox.IsChecked = _detectDuplicates;
+        UpdateRuleDependentUi();
+    }
+
+    private void UpdateRuleDependentUi()
+    {
+        if (FileNamePatternCard is not null)
+        {
+            FileNamePatternCard.Opacity = _validateFileName ? 1 : 0.55;
+            FileNamePatternCard.ToolTip = _validateFileName
+                ? "Введите пример имени файла, а regex сформируется автоматически."
+                : "Шаблон недоступен, потому что проверка имени файла выключена.";
+        }
+
+        if (RegexTextBox is not null)
+        {
+            RegexTextBox.IsEnabled = _validateFileName;
+        }
+
+        if (RootDirectoryCard is not null)
+        {
+            RootDirectoryCard.Opacity = _validatePath ? 1 : 0.55;
+            RootDirectoryCard.ToolTip = _validatePath
+                ? "Главная папка, внутри которой ожидаются папки клиента и типа продукта."
+                : "Корневая директория недоступна, потому что проверка пути выключена.";
+        }
+
+        if (RootDirectoryTextBox is not null)
+        {
+            RootDirectoryTextBox.IsEnabled = _validatePath;
+        }
+
+        if (BrowseRootDirectoryButton is not null)
+        {
+            BrowseRootDirectoryButton.IsEnabled = _validatePath;
+        }
+
+        if (SaveRootDirectoryButton is not null)
+        {
+            SaveRootDirectoryButton.IsEnabled = _validatePath;
+        }
+
+        if (CancelRootDirectoryButton is not null)
+        {
+            CancelRootDirectoryButton.IsEnabled = _validatePath;
+        }
+    }
+
+    private void UpdateRegexPreview()
+    {
+        if (RegexPreviewTextBlock is not null)
+        {
+            RegexPreviewTextBlock.Text = _fileNameRegexPattern;
+        }
+    }
+
+    private void FileNameExampleTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_loadingSettings)
+        {
+            UpdateRegexPreview();
+            return;
+        }
+
+        _fileNameRegexPattern = BuildRegexFromFileNameExample(RegexTextBox.Text.Trim());
+        UpdateRegexPreview();
+        MarkSettingsDirty();
+    }
+
+    private static string BuildRegexFromFileNameExample(string example)
+    {
+        if (string.IsNullOrWhiteSpace(example))
+        {
+            return @"^[\p{L}0-9]+_[\p{L}0-9]+_20\d{2}(?:_\d+)?\.[A-Za-z0-9]+$";
+        }
+
+        var fileName = Path.GetFileName(example.Trim());
+        var name = Path.GetFileNameWithoutExtension(fileName);
+        var parts = name.Split('_', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var hasVersion = parts.Length >= 4 && parts[^1].All(char.IsDigit);
+        var yearIndex = hasVersion ? parts.Length - 2 : parts.Length - 1;
+        var hasYear = yearIndex >= 0 && parts[yearIndex].Length == 4 && parts[yearIndex].All(char.IsDigit);
+        const string extensionPattern = @"\.[A-Za-z0-9]+";
+
+        if (parts.Length >= 3 && hasYear)
+        {
+            return @"^[\p{L}0-9]+_[\p{L}0-9]+_20\d{2}(?:_\d+)?" + extensionPattern + "$";
+        }
+
+        return @"^[\p{L}0-9 _-]+" + extensionPattern + "$";
+    }
+
+    private static string BuildExampleFromRegex(string regex)
+    {
+        return regex.Contains(@"_20\d{2}(?:_\d+)?", StringComparison.Ordinal)
+            ? "петров_визитка_2026.png"
+            : regex.Contains(@"_20\d{2}_\d+", StringComparison.Ordinal)
+                ? "петров_визитка_2026_1.png"
+            : regex.Contains(@"_20\d{2}", StringComparison.Ordinal)
+                ? "петров_визитка_2026.png"
+                : "петров_визитка_2026.png";
     }
 
     private void SettingsField_Changed(object sender, RoutedEventArgs e)
@@ -338,7 +452,15 @@ public partial class MainWindow : Window
         }
 
         var resultFilter = GetSelectedTag(JournalResultFilterComboBox);
-        if (!string.IsNullOrWhiteSpace(resultFilter) && resultFilter != "all")
+        if (resultFilter == "processed")
+        {
+            rows = rows.Where(static row => row.Result is "Успешно" or "Сохранено с нарушением" or "Дубликат найден" or "Дубликат переименован" or "Исправлено пользователем");
+        }
+        else if (resultFilter == "issues")
+        {
+            rows = rows.Where(static row => row.Result is "Заблокировано" or "Ошибка");
+        }
+        else if (!string.IsNullOrWhiteSpace(resultFilter) && resultFilter != "all")
         {
             rows = rows.Where(row => string.Equals(row.Result, resultFilter, StringComparison.OrdinalIgnoreCase));
         }
@@ -424,6 +546,23 @@ public partial class MainWindow : Window
         }
 
         JournalFilterPlaceholder.Visibility = string.IsNullOrWhiteSpace(JournalFilterTextBox.Text)
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+    }
+
+    private void GigaOrderIdTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        UpdateGigaOrderPlaceholder();
+    }
+
+    private void UpdateGigaOrderPlaceholder()
+    {
+        if (GigaOrderIdPlaceholder is null || GigaOrderIdTextBox is null)
+        {
+            return;
+        }
+
+        GigaOrderIdPlaceholder.Visibility = string.IsNullOrWhiteSpace(GigaOrderIdTextBox.Text)
             ? Visibility.Visible
             : Visibility.Collapsed;
     }
@@ -524,6 +663,29 @@ public partial class MainWindow : Window
     }
 
     private void OperationDetailsDialog_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        e.Handled = true;
+    }
+
+    private void CloseMetricDetails()
+    {
+        MetricDetailsOverlay.Visibility = Visibility.Collapsed;
+    }
+
+    private void CloseMetricDetailsButton_Click(object sender, RoutedEventArgs e)
+    {
+        CloseMetricDetails();
+    }
+
+    private void MetricDetailsOverlay_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (e.OriginalSource == MetricDetailsOverlay)
+        {
+            CloseMetricDetails();
+        }
+    }
+
+    private void MetricDetailsDialog_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
         e.Handled = true;
     }
@@ -633,9 +795,120 @@ public partial class MainWindow : Window
 
     private int GetDashboardTagCount(ProcessingLogRow row)
     {
-        return row.NormalizedTags.Count > 0
-            ? row.NormalizedTags.Count
-            : _logQueryService.ParseTags(row.TagsJson).Count;
+        return GetTags(row).Count;
+    }
+
+    private DashboardMetricSnapshot BuildDashboardMetricSnapshot()
+    {
+        var logs = _logs.ToList();
+        var processed = logs
+            .Where(static row => row.Result is "Успешно" or "Сохранено с нарушением" or "Дубликат найден" or "Дубликат переименован" or "Исправлено пользователем")
+            .ToList();
+        var issues = logs
+            .Where(static row => row.Result is "Заблокировано" or "Ошибка")
+            .ToList();
+        var duplicates = logs
+            .Where(static row => row.Result is "Дубликат найден" or "Дубликат переименован")
+            .ToList();
+        var tagged = logs
+            .Where(row => GetDashboardTagCount(row) > 0)
+            .ToList();
+        var totalTags = logs.Sum(GetDashboardTagCount);
+        var lastOperation = logs
+            .OrderByDescending(static row => ParseOperationTime(row.OperationTimeUtc))
+            .FirstOrDefault();
+
+        return new DashboardMetricSnapshot(logs, processed, issues, duplicates, tagged, totalTags, lastOperation);
+    }
+
+    private void ShowMetricDetails(string title, string subtitle, string icon, string body)
+    {
+        MetricDetailsTitleTextBlock.Text = title;
+        MetricDetailsSubtitleTextBlock.Text = subtitle;
+        MetricDetailsIconTextBlock.Text = icon;
+        MetricDetailsBodyTextBlock.Text = body;
+        MetricDetailsOverlay.Visibility = Visibility.Visible;
+    }
+
+    private void TotalOperationsMetricCard_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        var snapshot = BuildDashboardMetricSnapshot();
+        ShowMetricDetails(
+            "Всего операций",
+            "записи в журнале обработки",
+            "\uE9D2",
+            $"Всего записей: {snapshot.Logs.Count}{Environment.NewLine}" +
+            $"Успешные и сохраненные: {snapshot.Processed.Count}{Environment.NewLine}" +
+            $"Ошибки и блокировки: {snapshot.Issues.Count}{Environment.NewLine}" +
+            $"Похожие файлы: {snapshot.Duplicates.Count}");
+        e.Handled = true;
+    }
+
+    private void SuccessRateMetricCard_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        var snapshot = BuildDashboardMetricSnapshot();
+        var successRate = snapshot.Logs.Count == 0
+            ? 0
+            : (int)Math.Round(snapshot.Processed.Count * 100d / snapshot.Logs.Count);
+        ShowMetricDetails(
+            "Успешность",
+            "доля обработанных без ошибки",
+            "\uE73E",
+            $"Успешность: {successRate}%{Environment.NewLine}" +
+            $"Успешные записи: {snapshot.Processed.Count}{Environment.NewLine}" +
+            $"Записи с ошибками: {snapshot.Issues.Count}{Environment.NewLine}" +
+            $"Всего операций: {snapshot.Logs.Count}");
+        e.Handled = true;
+    }
+
+    private void TaggedFilesMetricCard_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        var snapshot = BuildDashboardMetricSnapshot();
+        ShowMetricDetails(
+            "Файлы с тегами",
+            "файлы, где есть сохраненные характеристики",
+            "\uE8EC",
+            $"Файлов с тегами: {snapshot.Tagged.Count}{Environment.NewLine}" +
+            $"Файлов без тегов: {Math.Max(0, snapshot.Logs.Count - snapshot.Tagged.Count)}{Environment.NewLine}" +
+            $"Всего сохраненных тегов: {snapshot.TotalTags}");
+        e.Handled = true;
+    }
+
+    private void AverageTagsMetricCard_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        var snapshot = BuildDashboardMetricSnapshot();
+        var averageAll = snapshot.Logs.Count == 0
+            ? 0
+            : snapshot.TotalTags / (double)snapshot.Logs.Count;
+        var averageTagged = snapshot.Tagged.Count == 0
+            ? 0
+            : snapshot.TotalTags / (double)snapshot.Tagged.Count;
+        ShowMetricDetails(
+            "Тегов на файл",
+            "среднее количество характеристик",
+            "\uE8A5",
+            $"Среднее по всем файлам: {averageAll:0.#}{Environment.NewLine}" +
+            $"Среднее среди файлов с тегами: {averageTagged:0.#}{Environment.NewLine}" +
+            $"Всего тегов: {snapshot.TotalTags}");
+        e.Handled = true;
+    }
+
+    private void LastOperationMetricCard_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        var snapshot = BuildDashboardMetricSnapshot();
+        var last = snapshot.LastOperation;
+        var body = last is null
+            ? "Операций пока нет."
+            : $"Файл: {last.FileName}{Environment.NewLine}" +
+              $"Результат: {last.Result}{Environment.NewLine}" +
+              $"Время: {last.OperationTimeDisplay}{Environment.NewLine}" +
+              $"OrderId: {(string.IsNullOrWhiteSpace(last.OrderId) ? "не указан" : last.OrderId)}";
+        ShowMetricDetails(
+            "Последняя операция",
+            "самая свежая запись журнала",
+            "\uE823",
+            body);
+        e.Handled = true;
     }
 
     private void UpdateSummaryCard(
@@ -694,8 +967,68 @@ public partial class MainWindow : Window
     {
         if (sender is TextBlock textBlock && _summaryRowsByTextBlock.TryGetValue(textBlock, out var row))
         {
-            OpenFileLocation(row.FilePath);
+            NavigateToJournal(GetDashboardResultFilter(row), row.Id);
+            e.Handled = true;
         }
+    }
+
+    private void DashboardJournalCard_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        NavigateToJournal("all");
+        e.Handled = true;
+    }
+
+    private void ProcessedSummaryCard_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        NavigateToJournal("processed");
+        e.Handled = true;
+    }
+
+    private void IssuesSummaryCard_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        NavigateToJournal("issues");
+        e.Handled = true;
+    }
+
+    private void DuplicatesSummaryCard_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        NavigateToJournal("Дубликат найден");
+        e.Handled = true;
+    }
+
+    private void NavigateToJournal(string resultFilterTag, int? selectedId = null)
+    {
+        JournalFilterTextBox.Clear();
+        JournalTagFilterComboBox.SelectedIndex = 0;
+        JournalSortComboBox.SelectedIndex = 0;
+        SelectComboBoxItemByTag(JournalResultFilterComboBox, resultFilterTag);
+        ApplyJournalView(selectedId);
+        ShowScreen(AppScreen.Journal);
+    }
+
+    private static string GetDashboardResultFilter(ProcessingLogRow row)
+    {
+        return row.Result switch
+        {
+            "Заблокировано" or "Ошибка" => "issues",
+            "Дубликат найден" or "Дубликат переименован" => "Дубликат найден",
+            "Успешно" or "Сохранено с нарушением" or "Исправлено пользователем" => "processed",
+            _ => "all",
+        };
+    }
+
+    private static void SelectComboBoxItemByTag(System.Windows.Controls.ComboBox comboBox, string tag)
+    {
+        foreach (var item in comboBox.Items.OfType<ComboBoxItem>())
+        {
+            if (string.Equals(item.Tag?.ToString(), tag, StringComparison.OrdinalIgnoreCase))
+            {
+                comboBox.SelectedItem = item;
+                return;
+            }
+        }
+
+        comboBox.SelectedIndex = 0;
     }
 
     private void UpdateRecentTagCards(IReadOnlyList<ProcessingLogRow> logs)
@@ -829,6 +1162,7 @@ public partial class MainWindow : Window
 
     private void BrowseRootDirectoryButton_Click(object sender, RoutedEventArgs e)
     {
+        _rootDirectoryBeforeBrowse = RootDirectoryTextBox.Text;
         using var dialog = new Forms.FolderBrowserDialog
         {
             Description = "Выберите корневую директорию модуля",
@@ -845,6 +1179,7 @@ public partial class MainWindow : Window
 
         RootDirectoryTextBox.Text = dialog.SelectedPath;
         SaveRootDirectoryButton.Visibility = Visibility.Visible;
+        CancelRootDirectoryButton.Visibility = Visibility.Visible;
         MarkSettingsDirty();
         StatusTextBlock.Text = "Выбрана новая корневая директория. Нажмите \"Сохранить\".";
     }
@@ -854,6 +1189,8 @@ public partial class MainWindow : Window
         try
         {
             SaveCurrentSettings("Корневая директория сохранена.");
+            _savedRootDirectory = RootDirectoryTextBox.Text.Trim();
+            _rootDirectoryBeforeBrowse = null;
         }
         catch (Exception ex)
         {
@@ -861,21 +1198,33 @@ public partial class MainWindow : Window
         }
     }
 
+    private void CancelRootDirectoryButton_Click(object sender, RoutedEventArgs e)
+    {
+        RootDirectoryTextBox.Text = _rootDirectoryBeforeBrowse ?? _savedRootDirectory;
+        _rootDirectoryBeforeBrowse = null;
+        SaveRootDirectoryButton.Visibility = Visibility.Collapsed;
+        CancelRootDirectoryButton.Visibility = Visibility.Collapsed;
+        StatusTextBlock.Text = "Выбор корневой директории отменен.";
+    }
+
     private void ValidateFileNameRuleCheckBox_Click(object sender, RoutedEventArgs e)
     {
         _validateFileName = ValidateFileNameRuleCheckBox.IsChecked == true;
+        UpdateRuleDependentUi();
         MarkSettingsDirty();
     }
 
     private void ValidatePathRuleCheckBox_Click(object sender, RoutedEventArgs e)
     {
         _validatePath = ValidatePathRuleCheckBox.IsChecked == true;
+        UpdateRuleDependentUi();
         MarkSettingsDirty();
     }
 
     private void DetectDuplicatesRuleCheckBox_Click(object sender, RoutedEventArgs e)
     {
         _detectDuplicates = DetectDuplicatesRuleCheckBox.IsChecked == true;
+        UpdateRuleDependentUi();
         MarkSettingsDirty();
     }
 
@@ -1394,12 +1743,16 @@ public partial class MainWindow : Window
 
     private void UpdateSearchResults(IReadOnlyList<ProcessingLogRow> rows, string filter, bool rememberSearch = false)
     {
-        _searchResults.Clear();
+        var selectedSearchId = (SearchResultsListBox.SelectedItem as ProcessingLogRow)?.Id ??
+            _selectedSearchResult?.Id ??
+            _selectedSearchResultId;
         _currentSearchFilter = filter;
 
         if (string.IsNullOrWhiteSpace(filter))
         {
             _selectedSearchResult = null;
+            _selectedSearchResultId = null;
+            _searchResults.Clear();
             if (SearchScreen.Visibility == Visibility.Visible)
             {
                 ShowScreen(AppScreen.Dashboard);
@@ -1413,28 +1766,62 @@ public partial class MainWindow : Window
         }
 
         ShowScreen(AppScreen.Search);
-
-        foreach (var row in rows.Where(row => row.NormalizedTags.Count > 0 && _logQueryService.MatchesFilter(row, filter)))
+        if (rememberSearch)
         {
-            _searchResults.Add(row);
+            RememberSearch(filter);
         }
 
-        SearchResultsTitleTextBlock.Text = $"Результаты поиска: {filter}";
-        SearchHistoryTextBlock.Text = string.Empty;
+        var filteredRows = rows
+            .Where(row => row.NormalizedTags.Count > 0 && _logQueryService.MatchesFilter(row, filter))
+            .ToList();
 
-        if (_searchResults.Count > 0)
+        _refreshingSearchResults = true;
+        try
         {
-            SearchResultsListBox.SelectedIndex = 0;
+            _searchResults.Clear();
+            foreach (var row in filteredRows)
+            {
+                _searchResults.Add(row);
+            }
+
+            SearchResultsTitleTextBlock.Text = $"Результаты поиска: {filter}";
+            SearchHistoryTextBlock.Text = string.Empty;
+
+            if (_searchResults.Count > 0)
+            {
+                var selectedRow = selectedSearchId is null
+                    ? null
+                    : _searchResults.FirstOrDefault(row => row.Id == selectedSearchId.Value);
+                SearchResultsListBox.SelectedItem = selectedRow ?? _searchResults[0];
+                _selectedSearchResultId = (SearchResultsListBox.SelectedItem as ProcessingLogRow)?.Id;
+                ShowSearchResultDetails(SearchResultsListBox.SelectedItem as ProcessingLogRow);
+            }
+            else
+            {
+                _selectedSearchResultId = null;
+                ShowSearchResultDetails(null);
+            }
         }
-        else
+        finally
         {
-            ShowSearchResultDetails(null);
+            _refreshingSearchResults = false;
         }
     }
 
     private void SearchResultsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        ShowSearchResultDetails(SearchResultsListBox.SelectedItem as ProcessingLogRow);
+        if (_refreshingSearchResults && SearchResultsListBox.SelectedItem is null)
+        {
+            return;
+        }
+
+        var row = SearchResultsListBox.SelectedItem as ProcessingLogRow;
+        if (row is not null)
+        {
+            _selectedSearchResultId = row.Id;
+        }
+
+        ShowSearchResultDetails(row);
     }
 
     private void ShowSearchResultDetails(ProcessingLogRow? row)
@@ -1522,9 +1909,48 @@ public partial class MainWindow : Window
 
     private IReadOnlyCollection<TagRow> GetTags(ProcessingLogRow row)
     {
-        return row.NormalizedTags.Count > 0
+        var rawTags = row.NormalizedTags.Count > 0
             ? row.NormalizedTags
             : _logQueryService.ParseTags(row.TagsJson);
+
+        return NormalizeDisplayTags(rawTags);
+    }
+
+    private static IReadOnlyCollection<TagRow> NormalizeDisplayTags(IReadOnlyCollection<TagRow> tags)
+    {
+        var result = new List<TagRow>();
+        var displayNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var tag in tags)
+        {
+            if (ShouldHideTag(tag.Key))
+            {
+                continue;
+            }
+
+            var displayName = DisplayTagKey(tag.Key);
+            if (!displayNames.Add(displayName))
+            {
+                continue;
+            }
+
+            result.Add(tag);
+        }
+
+        return result;
+    }
+
+    private static bool ShouldHideTag(string key)
+    {
+        return key.Trim().ToLowerInvariant() is
+            "composition" or
+            "object_type" or
+            "layout_type" or
+            "design_type" or
+            "mood" or
+            "purpose" or
+            "audience" or
+            "format";
     }
 
     private static string FormatSearchResultMessage(string message)
@@ -1548,14 +1974,8 @@ public partial class MainWindow : Window
             "visible_text" => "Надписи",
             "dominant_colors" or "colors" or "color" => "Цвета",
             "background" => "Фон",
-            "composition" => "Композиция",
-            "object_type" => "Тип макета",
             "product_type" or "product" => "Продукт",
             "style" => "Стиль",
-            "mood" => "Настроение",
-            "purpose" => "Назначение",
-            "audience" => "Аудитория",
-            "format" => "Формат",
             "client" => "Клиент",
             "order_id" or "orderid" => "Заказ",
             "file_name" => "Файл",
@@ -1972,12 +2392,10 @@ public partial class MainWindow : Window
 
     private void SetNavButtonState(WpfButton button, bool active)
     {
-        button.Background = active
-            ? (System.Windows.Media.Brush)FindResource("Active")
-            : System.Windows.Media.Brushes.Transparent;
+        button.Background = System.Windows.Media.Brushes.Transparent;
         button.Foreground = active
             ? (System.Windows.Media.Brush)FindResource("Accent")
-            : (System.Windows.Media.Brush)FindResource("Text");
+            : (System.Windows.Media.Brush)FindResource("Muted");
     }
 
     private static string FindWorkerSettingsPath()
@@ -1998,5 +2416,14 @@ public partial class MainWindow : Window
 
         return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "MediaModule.Worker", "appsettings.json"));
     }
+
+    private sealed record DashboardMetricSnapshot(
+        IReadOnlyList<ProcessingLogRow> Logs,
+        IReadOnlyList<ProcessingLogRow> Processed,
+        IReadOnlyList<ProcessingLogRow> Issues,
+        IReadOnlyList<ProcessingLogRow> Duplicates,
+        IReadOnlyList<ProcessingLogRow> Tagged,
+        int TotalTags,
+        ProcessingLogRow? LastOperation);
 }
 
